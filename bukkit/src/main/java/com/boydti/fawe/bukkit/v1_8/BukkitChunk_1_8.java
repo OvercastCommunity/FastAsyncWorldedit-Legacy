@@ -185,10 +185,11 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                 if (count == 0) {
                     continue;
                 }
-                char[] newArray = this.getIdArray(j);
-                if (newArray == null) {
+                char[] internalIdArray = this.getIdArray(j);
+                if (internalIdArray == null) {
                     continue;
                 }
+                char[] newArray = Arrays.copyOf(internalIdArray, internalIdArray.length);
                 int countAir = this.getAir(j);
                 ChunkSection section = sections[j];
                 if (section != null && BukkitQueue18R3.isDirty != null) {
@@ -199,6 +200,7 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                         continue;
                     }
                     sections[j] = section = new ChunkSection(j << 4, flag, newArray);
+                    getParent().setCount(0, count - countAir, section);
                     continue;
                 }
                 if (count >= 4096) {
@@ -206,7 +208,8 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                         sections[j] = null;
                         continue;
                     }
-                    sections[j] = section = new ChunkSection(j << 4, flag, newArray);
+                    sections[j].a(newArray);
+                    getParent().setCount(0, count - countAir, section);
                     continue;
                 }
                 int by = j << 4;
