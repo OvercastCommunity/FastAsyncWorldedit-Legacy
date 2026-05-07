@@ -701,11 +701,11 @@ public class BukkitQueue17 extends BukkitQueue_0<net.minecraft.server.v1_7_R4.Ch
 
     @Override
     public void relightBlock(int x, int y, int z) {
-        nmsWorld.c(EnumSkyBlock.BLOCK, x, y, z);
+        nmsWorld.updateLight(EnumSkyBlock.BLOCK, x, y, z);
     }
 
     @Override
     public void relightSky(int x, int y, int z) {
-        nmsWorld.c(EnumSkyBlock.SKY, x, y, z);
+        nmsWorld.updateLight(EnumSkyBlock.SKY, x, y, z);
     }
 }

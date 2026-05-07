@@ -1,5 +1,5 @@
 repositories {
-    flatDir {dirs 'lib'}
+    flatDir {dirs '../libs'}
 }
 dependencies {
     testCompile 'junit:junit:4.13.1'

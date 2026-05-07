@@ -1,5 +1,5 @@
 repositories {
-    flatDir {dirs 'lib'}
+    flatDir {dirs '../libs'}
 }
 dependencies {
     compile project(':core')
@@ -17,7 +17,7 @@ dependencies {
     compile 'me.ryanhamshire:GriefPrevention:11.5.2'
     compile 'net.jzx7:regios:5.9.9'
     compile 'com.bekvon.bukkit.residence:Residence:4.5._13.1'
-    compile 'com.palmergames.bukkit:towny:0.84.0.9'
+    compile 'com.palmergames.bukkit:towny:0.84.0.0'
     compile 'com.worldcretornica:plotme_core:0.16.3'
     compile 'junit:junit:4.13.1'
     compile 'com.sk89q.worldedit:worldedit-bukkit:6.1.5'

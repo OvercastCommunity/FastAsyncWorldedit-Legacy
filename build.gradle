@@ -94,8 +94,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {url "https://repo.destroystokyo.com/repository/maven-public//"}
-        maven {url "https://ci.athion.net/plugin/repository/tools/"}
         maven {url "https://hub.spigotmc.org/nexus/content/groups/public/"}
         maven {url "https://maven.enginehub.org/repo/"}
         maven {url "https://repo.maven.apache.org/maven2"}
@@ -109,6 +107,7 @@ subprojects {
         maven {url "https://repo.papermc.io/repository/maven-public/"}
         maven {url "https://jitpack.io"}
         maven {url "https://repo.codemc.org/repository/maven-public"}
+        maven {url "https://repo.minebench.de"}
     }
 }
 task aggregatedJavadocs(type: Javadoc, description: 'Generate javadocs from all child projects as if it was a single project', group: 'Documentation') {
