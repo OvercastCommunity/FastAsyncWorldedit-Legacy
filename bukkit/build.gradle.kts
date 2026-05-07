@@ -1,0 +1,74 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+repositories {
+    flatDir {
+        dirs("../libs")
+    }
+}
+
+dependencies {
+    api(project(":core"))
+    api("com.sk89q:worldguard:6.0.0-SNAPSHOT")
+    api("com.destroystokyo.paper:paper-api:1.12-R0.1-SNAPSHOT") {
+        exclude(group = "net.md-5")
+    }
+    api("org.bukkit.craftbukkit:Craftbukkit_1_12:1.12.1")
+    api("org.bukkit.craftbukkit:Craftbukkit_1_11:1.11")
+    api("org.bukkit.craftbukkit:Craftbukkit_1_10:1.10")
+    api("org.bukkit.craftbukkit:Craftbukkit_1_9:1.9.4")
+    api("org.bukkit.craftbukkit:Craftbukkit_1_8:1.8.8")
+    api("org.bukkit.craftbukkit:Craftbukkit_1_7:1.7.10")
+    api("com.github.MilkBowl:VaultAPI:1.7")
+    api("me.ryanhamshire:GriefPrevention:11.5.2")
+    api("net.jzx7:regios:5.9.9")
+    api("com.bekvon.bukkit.residence:Residence:4.5._13.1")
+    api("com.palmergames.bukkit:towny:0.84.0.0")
+    api("com.worldcretornica:plotme_core:0.16.3")
+    api("junit:junit:4.13.1")
+    api("com.sk89q.worldedit:worldedit-bukkit:6.1.5")
+    api("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT")
+    api("com.thevoxelbox.voxelsniper:voxelsniper:5.171.0")
+    api("net.dmulloy2:ProtocolLib:5.1.0")
+    api("com.wasteofplastic:askyblock:3.0.9.4")
+    api("org.inventivetalent:mapmanager:1.7.2-SNAPSHOT") {
+        isTransitive = false
+    }
+}
+
+tasks.processResources {
+    from("src/main/resources") {
+        include("plugin.yml")
+        expand(
+            mapOf(
+                "name" to project.parent?.name,
+                "version" to project.parent?.version
+            )
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+apply(plugin = "com.gradleup.shadow")
+
+tasks.named<ShadowJar>("shadowJar") {
+    dependencies {
+        include(dependency("com.github.luben:zstd-jni:1.1.1"))
+        include(dependency("co.aikar:fastutil-lite:1.0"))
+        include(dependency(":core"))
+    }
+    archiveFileName.set("${parent?.name}-${project.name}-${parent?.version}.jar")
+    destinationDirectory.set(file("../target"))
+    relocate("com.google.gson", "com.sk89q.worldedit.internal.gson")
+}
+
+tasks.named<ShadowJar>("shadowJar") {
+    doLast {
+        ant.withGroovyBuilder {
+            "checksum"("file" to archiveFile.get().asFile)
+        }
+    }
+}
+
+tasks.build {
+    dependsOn(tasks.named("shadowJar"))
+}
