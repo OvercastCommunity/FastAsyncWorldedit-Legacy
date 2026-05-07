@@ -10,10 +10,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import sun.reflect.ConstructorAccessor;
-import sun.reflect.FieldAccessor;
-import sun.reflect.ReflectionFactory;
-
 /**
  * @author DPOH-VAR
  * @version 1.0
@@ -114,14 +110,16 @@ public class ReflectionUtils {
         return enumClass.cast(getConstructorAccessor(enumClass, additionalTypes).newInstance(parms));
     }
 
-    private static ConstructorAccessor getConstructorAccessor(Class<?> enumClass,
-                                                              Class<?>[] additionalParameterTypes) throws NoSuchMethodException {
+    private static Constructor<?> getConstructorAccessor(Class<?> enumClass,
+                                                        Class<?>[] additionalParameterTypes) throws NoSuchMethodException {
         Class<?>[] parameterTypes = new Class[additionalParameterTypes.length + 2];
         parameterTypes[0] = String.class;
         parameterTypes[1] = int.class;
         System.arraycopy(additionalParameterTypes, 0,
                 parameterTypes, 2, additionalParameterTypes.length);
-        return ReflectionFactory.getReflectionFactory().newConstructorAccessor(enumClass.getDeclaredConstructor(parameterTypes));
+        Constructor<?> constructor = enumClass.getDeclaredConstructor(parameterTypes);
+        constructor.setAccessible(true);
+        return constructor;
     }
 
     public static void setFailsafeFieldValue(Field field, Object target, Object value)
@@ -147,12 +145,7 @@ public class ReflectionUtils {
             }
         }
 
-        try {
-            FieldAccessor fa = ReflectionFactory.getReflectionFactory().newFieldAccessor(field, false);
-            fa.set(target, value);
-        } catch (NoSuchMethodError error) {
-            field.set(target, value);
-        }
+        field.set(target, value);
     }
 
     private static void blankField(Class<?> enumClass, String fieldName)

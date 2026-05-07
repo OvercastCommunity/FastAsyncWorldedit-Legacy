@@ -21,15 +21,16 @@ package com.sk89q.worldedit.scripting;
 
 import com.boydti.fawe.Fawe;
 import com.sk89q.worldedit.WorldEditException;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 public class NashornCraftScriptEngine implements CraftScriptEngine {
-    private static NashornScriptEngineFactory FACTORY;
+    private static Object FACTORY;
+    private static Method GET_SCRIPT_ENGINE;
     private int timeLimit;
 
     @Override
@@ -47,10 +48,19 @@ public class NashornCraftScriptEngine implements CraftScriptEngine {
         ClassLoader cl = Fawe.get().getClass().getClassLoader();
         Thread.currentThread().setContextClassLoader(cl);
         synchronized (NashornCraftScriptEngine.class) {
-            if (FACTORY == null) FACTORY = new NashornScriptEngineFactory();
+            if (FACTORY == null) {
+                Class<?> factoryClass;
+                try {
+                    factoryClass = Class.forName("org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory");
+                } catch (ClassNotFoundException ignored) {
+                    factoryClass = Class.forName("jdk.nashorn.api.scripting.NashornScriptEngineFactory");
+                }
+                FACTORY = factoryClass.getDeclaredConstructor().newInstance();
+                GET_SCRIPT_ENGINE = factoryClass.getMethod("getScriptEngine", String[].class);
+            }
         }
         ;
-        ScriptEngine engine = FACTORY.getScriptEngine("--language=es6");
+        ScriptEngine engine = (ScriptEngine) GET_SCRIPT_ENGINE.invoke(FACTORY, (Object) new String[]{"--language=es6"});
         SimpleBindings bindings = new SimpleBindings();
 
         for (Map.Entry<String, Object> entry : args.entrySet()) {
