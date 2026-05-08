@@ -1,19 +1,16 @@
-repositories {
-    flatDir {
-        dirs("../libs")
-    }
+plugins {
+    id("fawe.java-conventions")
 }
 
 dependencies {
     testImplementation("junit:junit:4.13.1")
-    api("org.yaml:snakeyaml:1.33")
-    api("com.google.code.gson:gson:2.8.9")
-    api("net.fabiozumbi12:redprotect:1.9.6")
-    api("com.plotsquared:PlotSquared-Bukkit:3.823")
-    api("org.primesoft:BlocksHub:2.0")
-    api("com.github.luben:zstd-jni:1.1.1")
-    // compile("org.javassist:javassist:3.22.0-CR1")
-    api("co.aikar:fastutil-lite:1.0")
+    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("org.yaml:snakeyaml:1.33")
+    compileOnly("net.fabiozumbi12:redprotect:1.9.6")
+    compileOnly("com.plotsquared:PlotSquared-Bukkit:3.823")
+    compileOnly("org.primesoft:BlocksHub:2.0")
+    implementation("com.github.luben:zstd-jni:1.1.1")
+    implementation("co.aikar:fastutil-lite:1.0")
     api("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT") {
         exclude(module = "bukkit-classloader-check")
     }

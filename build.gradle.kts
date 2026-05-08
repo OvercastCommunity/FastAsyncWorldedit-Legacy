@@ -11,19 +11,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import javax.inject.Inject
 
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-        }
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("com.gradleup.shadow:shadow-gradle-plugin:9.4.1")
-    }
+plugins {
+    base
 }
 
 abstract class GitVersionValueSource : ValueSource<String, GitVersionValueSource.Parameters> {
@@ -114,12 +103,6 @@ abstract class GitVersionValueSource : ValueSource<String, GitVersionValueSource
     }
 }
 
-tasks.register("setupCIWorkspace") {
-    // do nothing, stub method
-}
-
-plugins.apply("java")
-
 tasks.named<Delete>("clean") {
     delete("target")
 }
@@ -131,39 +114,6 @@ version = providers.of(GitVersionValueSource::class) {
     parameters.noVersion.set(providers.gradleProperty("lzNoVersion").map { true }.orElse(false))
 }.get()
 description = "FastAsyncWorldEdit"
-
-subprojects {
-    apply(plugin = "java-library")
-    apply(plugin = "eclipse")
-    apply(plugin = "idea")
-
-    extensions.configure<JavaPluginExtension>("java") {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    tasks.withType<JavaCompile>().configureEach {
-        options.compilerArgs.add("-parameters")
-    }
-
-    repositories {
-        mavenCentral()
-        maven { url = uri("https://hub.spigotmc.org/nexus/content/groups/public/") }
-        maven { url = uri("https://maven.enginehub.org/repo/") }
-        maven { url = uri("https://repo.maven.apache.org/maven2") }
-        maven { url = uri("https://ci.frostcast.net/plugin/repository/everything") }
-        maven { url = uri("https://repo.spongepowered.org/maven") }
-        maven { url = uri("https://repo.inventivetalent.org/content/groups/public/") }
-        maven { url = uri("https://store.ttyh.ru/libraries/") }
-        maven { url = uri("https://repo.dmulloy2.net/nexus/repository/public/") }
-        maven { url = uri("https://maven.elmakers.com/repository/") }
-        maven { url = uri("https://ci.ender.zone/plugin/repository/everything/") }
-        maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
-        maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://repo.codemc.org/repository/maven-public") }
-        maven { url = uri("https://repo.minebench.de") }
-    }
-}
 
 tasks.register<Javadoc>("aggregatedJavadocs") {
     description = "Generate javadocs from all child projects as if it was a single project"
@@ -182,14 +132,7 @@ tasks.register<Javadoc>("aggregatedJavadocs") {
         addStringOption("Xdoclint:none", "-quiet")
     }
 
-    delete("./docs")
-
-    subprojects.forEach { proj ->
-        proj.tasks.withType<Javadoc>().configureEach {
-            source(this.source)
-            classpath += this.classpath
-            include(this.includes)
-            exclude(this.excludes)
-        }
+    doFirst {
+        delete("./docs")
     }
 }

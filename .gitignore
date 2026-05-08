@@ -34,6 +34,8 @@ wiki_permissions.md
 *.iml
 /obj
 docs/
+**/.gradle/
+**/.kotlin/
 
 bukkit/bin/
 core/bin/
