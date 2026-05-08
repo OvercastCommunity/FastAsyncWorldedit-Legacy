@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import java.security.MessageDigest
 
 plugins {
     id("fawe.java-conventions")
@@ -50,6 +49,11 @@ tasks.processResources {
 }
 
 val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+    archiveFileName = "${rootProject.name}-${project.name}-${rootProject.version}.jar"
+    archiveClassifier.set("")
+    destinationDirectory = rootProject.projectDir.resolve("target")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     dependencies {
         include(dependency("com.github.luben:zstd-jni:1.1.1"))
         include(dependency("co.aikar:fastutil-lite:1.0"))
@@ -57,33 +61,10 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
         include(dependency("com.google.code.gson:gson:2.8.9"))
         include(dependency(":core"))
     }
-    archiveFileName.set("${parent?.name}-${project.name}-${parent?.version}.jar")
-    destinationDirectory.set(file("../target"))
+
     relocate("com.google.gson", "com.sk89q.worldedit.internal.gson")
 }
 
-val shadowJarChecksum = tasks.register("shadowJarChecksum") {
-    val archiveName = "${parent?.name}-${project.name}-${parent?.version}.jar"
-    val archiveFile = layout.projectDirectory.file("../target/$archiveName")
-    val checksumFile = layout.projectDirectory.file("../target/$archiveName.MD5")
-
-    inputs.file(archiveFile)
-    outputs.file(checksumFile)
-
+tasks.named("build") {
     dependsOn(shadowJar)
-
-    doLast {
-        val file = archiveFile.asFile
-        val digest = MessageDigest.getInstance("MD5")
-        file.inputStream().use { input ->
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            generateSequence { input.read(buffer).takeIf { it != -1 } }
-                .forEach { digest.update(buffer, 0, it) }
-        }
-        checksumFile.asFile.writeText(digest.digest().joinToString("") { "%02x".format(it) })
-    }
-}
-
-tasks.build {
-    dependsOn(shadowJarChecksum)
 }
