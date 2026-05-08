@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -373,18 +372,7 @@ public class FaweBukkit implements IFawe, Listener {
 
     @Override
     public FaweQueue getNewQueue(String world, boolean fast) {
-        if (playerChunk != (playerChunk = true)) {
-            try {
-                Field fieldDirtyCount = BukkitReflectionUtils.getRefClass("{nms}.PlayerChunk").getField("dirtyCount").getRealField();
-                fieldDirtyCount.setAccessible(true);
-                int mod = fieldDirtyCount.getModifiers();
-                if ((mod & Modifier.VOLATILE) == 0) {
-                    Field modifiersField = Field.class.getDeclaredField("modifiers");
-                    modifiersField.setAccessible(true);
-                    modifiersField.setInt(fieldDirtyCount, mod + Modifier.VOLATILE);
-                }
-            } catch (Throwable ignore) {}
-        }
+        playerChunk = true;
         try {
             return getQueue(world);
         } catch (Throwable ignore) {
@@ -426,19 +414,7 @@ public class FaweBukkit implements IFawe, Listener {
     @Override
     public FaweQueue getNewQueue(World world, boolean fast) {
         if (fast) {
-            if (playerChunk != (playerChunk = true)) {
-                try {
-                    Field fieldDirtyCount = BukkitReflectionUtils.getRefClass("{nms}.PlayerChunk").getField("dirtyCount").getRealField();
-                    fieldDirtyCount.setAccessible(true);
-                    int mod = fieldDirtyCount.getModifiers();
-                    if ((mod & Modifier.VOLATILE) == 0) {
-                        Field modifiersField = Field.class.getDeclaredField("modifiers");
-                        modifiersField.setAccessible(true);
-                        modifiersField.setInt(fieldDirtyCount, mod + Modifier.VOLATILE);
-                    }
-                } catch (Throwable ignore) {
-                }
-            }
+            playerChunk = true;
             Throwable error = null;
             try {
                 return getQueue(world);

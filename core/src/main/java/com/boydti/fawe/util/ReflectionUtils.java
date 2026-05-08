@@ -1,13 +1,12 @@
 package com.boydti.fawe.util;
 
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -16,156 +15,32 @@ import java.util.*;
  */
 @SuppressWarnings({"UnusedDeclaration", "rawtypes"})
 public class ReflectionUtils {
+    private static final VarHandle REFERENCE_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(Object[].class);
+
     public static <T> T as(Class<T> t, Object o) {
         return t.isInstance(o) ? t.cast(o) : null;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName) {
-        try {
-            return addEnum(enumType, enumName, new Class<?>[]{}, new Object[]{});
-        } catch (Throwable ignore) {
-            return ReflectionUtils9.addEnum(enumType, enumName);
-        }
-    }
-
-
-    public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Class<?>[] additionalTypes, Object[] additionalValues) {
-
-        // 0. Sanity checks
-        if (!Enum.class.isAssignableFrom(enumType)) {
-            throw new RuntimeException("class " + enumType + " is not an instance of Enum");
-        }
-        // 1. Lookup "$VALUES" holder in enum class and get previous enum instances
-        Field valuesField = null;
-        Field[] fields = enumType.getDeclaredFields();
-        for (Field field : fields) {
-            if (field.getName().contains("$VALUES")) {
-                valuesField = field;
-                break;
-            }
-        }
-        AccessibleObject.setAccessible(new Field[]{valuesField}, true);
-
-        try {
-
-            // 2. Copy it
-            T[] previousValues = (T[]) valuesField.get(enumType);
-            List values = new ArrayList(Arrays.asList(previousValues));
-
-            // 3. build new enum
-            T newValue = (T) makeEnum(enumType, // The target enum class
-                    enumName, // THE NEW ENUM INSTANCE TO BE DYNAMICALLY ADDED
-                    values.size(),
-                    additionalTypes, // can be used to pass values to the enum constuctor
-                    additionalValues); // can be used to pass values to the enum constuctor
-
-            // 4. add new value
-            values.add(newValue);
-
-            // 5. Set new values field
-            setFailsafeFieldValue(valuesField, null,
-                    values.toArray((T[]) Array.newInstance(enumType, 0)));
-
-            // 6. Clean enum cache
-            cleanEnumCache(enumType);
-            return newValue;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    public static <T extends Enum<?>> void clearEnum(Class<T> enumType) {
-        // 0. Sanity checks
-        if (!Enum.class.isAssignableFrom(enumType)) {
-            throw new RuntimeException("class " + enumType + " is not an instance of Enum");
-        }
-        // 1. Lookup "$VALUES" holder in enum class and get previous enum instances
-        Field valuesField = null;
-        Field[] fields = enumType.getDeclaredFields();
-        for (Field field : fields) {
-            if (field.getName().contains("$VALUES")) {
-                valuesField = field;
-                break;
-            }
-        }
-        AccessibleObject.setAccessible(new Field[]{valuesField}, true);
-        try {
-            setFailsafeFieldValue(valuesField, null, Array.newInstance(enumType, 0));
-            // 6. Clean enum cache
-            cleanEnumCache(enumType);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    private static Object makeEnum(Class<?> enumClass, String value, int ordinal,
-                                   Class<?>[] additionalTypes, Object[] additionalValues) throws Exception {
-        Object[] parms = new Object[additionalValues.length + 2];
-        parms[0] = value;
-        parms[1] = Integer.valueOf(ordinal);
-        System.arraycopy(additionalValues, 0, parms, 2, additionalValues.length);
-        return enumClass.cast(getConstructorAccessor(enumClass, additionalTypes).newInstance(parms));
-    }
-
-    private static Constructor<?> getConstructorAccessor(Class<?> enumClass,
-                                                        Class<?>[] additionalParameterTypes) throws NoSuchMethodException {
-        Class<?>[] parameterTypes = new Class[additionalParameterTypes.length + 2];
-        parameterTypes[0] = String.class;
-        parameterTypes[1] = int.class;
-        System.arraycopy(additionalParameterTypes, 0,
-                parameterTypes, 2, additionalParameterTypes.length);
-        Constructor<?> constructor = enumClass.getDeclaredConstructor(parameterTypes);
-        constructor.setAccessible(true);
-        return constructor;
+    /**
+     * Performs a compare-and-set on an array element.
+     *
+     * @param array the array containing the element
+     * @param expectedValue the value expected at the index
+     * @param newValue the value to set when the expected value matches
+     * @param index the array index
+     * @return true if the element was updated
+     */
+    public static <T> boolean compareAndSet(T[] array, T expectedValue, T newValue, int index) {
+        return REFERENCE_ARRAY_HANDLE.compareAndSet(array, index, expectedValue, newValue);
     }
 
     public static void setFailsafeFieldValue(Field field, Object target, Object value)
             throws NoSuchFieldException, IllegalAccessException {
-
-        // let's make the field accessible
         field.setAccessible(true);
-
-        // next we change the modifier in the Field instance to
-        // not be final anymore, thus tricking reflection into
-        // letting us modify the static final field
-        if (Modifier.isFinal(field.getModifiers())) {
-            try {
-                Field lookupField = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-                lookupField.setAccessible(true);
-
-                // blank out the final bit in the modifiers int
-                ((MethodHandles.Lookup) lookupField.get(null))
-                        .findSetter(Field.class, "modifiers", int.class)
-                        .invokeExact(field, field.getModifiers() & ~Modifier.FINAL);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-
         field.set(target, value);
     }
 
-    private static void blankField(Class<?> enumClass, String fieldName)
-            throws NoSuchFieldException, IllegalAccessException {
-        for (Field field : Class.class.getDeclaredFields()) {
-            if (field.getName().contains(fieldName)) {
-                AccessibleObject.setAccessible(new Field[]{field}, true);
-                setFailsafeFieldValue(field, enumClass, null);
-                break;
-            }
-        }
-    }
-
-    private static void cleanEnumCache(Class<?> enumClass)
-            throws NoSuchFieldException, IllegalAccessException {
-        blankField(enumClass, "enumConstantDirectory"); // Sun (Oracle?!?) JDK 1.5/6
-        blankField(enumClass, "enumConstants"); // IBM JDK
-    }
-
-    private static Class<?> UNMODIFIABLE_MAP = Collections.unmodifiableMap(Collections.EMPTY_MAP).getClass();
+    private static final Class<?> UNMODIFIABLE_MAP = Collections.EMPTY_MAP.getClass();
 
     public static <T, V> Map<T, V> getMap(Map<T, V> map) {
         try {
@@ -302,9 +177,6 @@ public class ReflectionUtils {
                         if (mp[i] != params[i]) continue outer;
                     }
                     if (index-- == 0) return setAccessible(method);
-                    else {
-                        continue;
-                    }
                 }
             }
         }
@@ -312,12 +184,12 @@ public class ReflectionUtils {
     }
 
     public static Method[] sortMethods(Method[] methods) {
-        Arrays.sort(methods, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+        Arrays.sort(methods, Comparator.comparing(Method::getName));
         return methods;
     }
 
     public static Field[] sortFields(Field[] fields) {
-        Arrays.sort(fields, (o1, o2) -> o1.getName().compareTo(o2.getName()));
+        Arrays.sort(fields, Comparator.comparing(Field::getName));
         return fields;
     }
 

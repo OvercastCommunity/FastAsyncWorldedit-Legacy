@@ -45,7 +45,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class AbstractDelegateExtent implements LightingExtent {
 
-    private transient final Extent extent;
+    private transient Extent extent;
     private MutableBlockVector mutable = new MutableBlockVector(0, 0, 0);
 
     /**
@@ -114,6 +114,10 @@ public class AbstractDelegateExtent implements LightingExtent {
      */
     public Extent getExtent() {
         return extent;
+    }
+
+    public void setDelegateExtent(Extent extent) {
+        this.extent = extent;
     }
 
     @Override

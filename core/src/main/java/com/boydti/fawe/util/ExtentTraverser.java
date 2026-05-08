@@ -2,7 +2,6 @@ package com.boydti.fawe.util;
 
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.Extent;
-import java.lang.reflect.Field;
 
 public class ExtentTraverser<T extends Extent> {
     private T root;
@@ -26,14 +25,11 @@ public class ExtentTraverser<T extends Extent> {
     }
 
     public boolean setNext(T next) {
-        try {
-            Field field = AbstractDelegateExtent.class.getDeclaredField("extent");
-            ReflectionUtils.setFailsafeFieldValue(field, root, next);
+        if (root instanceof AbstractDelegateExtent) {
+            ((AbstractDelegateExtent) root).setDelegateExtent(next);
             return true;
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     public ExtentTraverser<T> last() {
@@ -47,16 +43,12 @@ public class ExtentTraverser<T extends Extent> {
     }
 
     public boolean insert(T extent) {
-        try {
-            Field field = AbstractDelegateExtent.class.getDeclaredField("extent");
-            field.setAccessible(true);
-            field.set(extent, field.get(root));
-            field.set(root, extent);
+        if (root instanceof AbstractDelegateExtent && extent instanceof AbstractDelegateExtent) {
+            ((AbstractDelegateExtent) extent).setDelegateExtent(((AbstractDelegateExtent) root).getExtent());
+            ((AbstractDelegateExtent) root).setDelegateExtent(extent);
             return true;
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
     public <U> U findAndGet(Class<U> clazz) {
@@ -101,20 +93,13 @@ public class ExtentTraverser<T extends Extent> {
     }
 
     public ExtentTraverser<T> next() {
-        try {
-            if (root instanceof AbstractDelegateExtent) {
-                Field field = AbstractDelegateExtent.class.getDeclaredField("extent");
-                field.setAccessible(true);
-                T value = (T) field.get(root);
-                if (value == null) {
-                    return null;
-                }
-                return new ExtentTraverser<>(value, this);
+        if (root instanceof AbstractDelegateExtent) {
+            T value = (T) ((AbstractDelegateExtent) root).getExtent();
+            if (value == null) {
+                return null;
             }
-            return null;
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return null;
+            return new ExtentTraverser<>(value, this);
         }
+        return null;
     }
 }

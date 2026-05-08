@@ -342,29 +342,25 @@ public class ClipboardCommands extends MethodCommands {
             } else {
                 target = clipboard;
             }
-            switch (format) {
-                case PNG:
-                    try {
-                        FastByteArrayOutputStream baos = new FastByteArrayOutputStream(Short.MAX_VALUE);
-                        ClipboardWriter writer = format.getWriter(baos);
-                        writer.write(target, null);
-                        baos.flush();
-                        url = ImgurUtility.uploadImage(baos.toByteArray());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        url = null;
-                    }
-                    break;
-                case SCHEMATIC:
-                    if (Settings.IMP.WEB.URL.isEmpty()) {
-                        BBC.SETTING_DISABLE.send(player, "web.url");
-                        return;
-                    }
-                    url = FaweAPI.upload(target, format);
-                    break;
-                default:
+            if (format == ClipboardFormat.PNG) {
+                try {
+                    FastByteArrayOutputStream baos = new FastByteArrayOutputStream(Short.MAX_VALUE);
+                    ClipboardWriter writer = format.getWriter(baos);
+                    writer.write(target, null);
+                    baos.flush();
+                    url = ImgurUtility.uploadImage(baos.toByteArray());
+                } catch (IOException e) {
+                    e.printStackTrace();
                     url = null;
-                    break;
+                }
+            } else if (format == ClipboardFormat.SCHEMATIC) {
+                if (Settings.IMP.WEB.URL.isEmpty()) {
+                    BBC.SETTING_DISABLE.send(player, "web.url");
+                    return;
+                }
+                url = FaweAPI.upload(target, format);
+            } else {
+                url = null;
             }
         }
         if (url == null) {

@@ -1,14 +1,12 @@
 package com.boydti.fawe.object.extent;
 
 import com.boydti.fawe.util.ExtentTraverser;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.world.World;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -54,12 +52,7 @@ public class ResettableExtent extends AbstractDelegateExtent implements Serializ
     private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         if (stream.readBoolean()) {
-            try {
-                Field field = AbstractDelegateExtent.class.getDeclaredField("extent");
-                ReflectionUtils.setFailsafeFieldValue(field, this, stream.readObject());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
+            setDelegateExtent((Extent) stream.readObject());
         }
     }
 }

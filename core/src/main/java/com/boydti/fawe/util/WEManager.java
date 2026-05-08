@@ -14,7 +14,6 @@ import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.regions.Region;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,11 +25,10 @@ public class WEManager {
 
     public void cancelEditSafe(Extent parent, BBC reason) throws FaweException {
         try {
-            final Field field = AbstractDelegateExtent.class.getDeclaredField("extent");
-            field.setAccessible(true);
-            Object currentExtent = field.get(parent);
+            AbstractDelegateExtent delegate = (AbstractDelegateExtent) parent;
+            Object currentExtent = delegate.getExtent();
             if (!(currentExtent instanceof NullExtent)) {
-                field.set(parent, new NullExtent((Extent) field.get(parent), reason));
+                delegate.setDelegateExtent(new NullExtent((Extent) currentExtent, reason));
             }
         } catch (final Exception e) {
             MainUtil.handleError(e);
