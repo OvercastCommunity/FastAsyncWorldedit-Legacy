@@ -64,7 +64,6 @@ public class ChunkListener_9 extends ChunkListener {
                 cancelNearby(cx, cz);
                 event.setCancelled(true);
                 physCancel = true;
-                return;
             }
         }
     }

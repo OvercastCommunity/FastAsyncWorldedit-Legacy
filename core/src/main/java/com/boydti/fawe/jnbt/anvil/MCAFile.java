@@ -114,14 +114,6 @@ public class MCAFile {
         IterableThreadLocal.clean(byteStore3);
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        IterableThreadLocal.clean(byteStore1);
-        IterableThreadLocal.clean(byteStore2);
-        IterableThreadLocal.clean(byteStore3);
-        super.finalize();
-    }
-
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }

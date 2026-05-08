@@ -13,7 +13,6 @@ import com.boydti.fawe.object.FaweQueue;
 import com.boydti.fawe.object.RegionWrapper;
 import com.boydti.fawe.object.RunnableVal2;
 import com.boydti.fawe.object.RunnableVal4;
-import com.boydti.fawe.object.collection.IterableThreadLocal;
 import com.boydti.fawe.util.MainUtil;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.worldedit.Vector;
@@ -45,12 +44,6 @@ public class MCAQueue extends NMSMappedFaweQueue<FaweQueue, FaweChunk, FaweChunk
             return new MutableMCABackedBaseBlock();
         }
     };
-
-    @Override
-    protected void finalize() throws Throwable {
-        IterableThreadLocal.clean(blockStore);
-        super.finalize();
-    }
 
     public MCAQueue(FaweQueue parent) {
         super(parent.getWorldName(), new MCAQueueMap());

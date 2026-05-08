@@ -2,6 +2,7 @@ package com.boydti.fawe.util;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
+import java.nio.ByteBuffer;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -16,6 +17,23 @@ import java.util.*;
 @SuppressWarnings({"UnusedDeclaration", "rawtypes"})
 public class ReflectionUtils {
     private static final VarHandle REFERENCE_ARRAY_HANDLE = MethodHandles.arrayElementVarHandle(Object[].class);
+    private static final Object UNSAFE;
+    private static final Method INVOKE_CLEANER;
+
+    static {
+        Object unsafe = null;
+        Method invokeCleaner = null;
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field theUnsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            theUnsafeField.setAccessible(true);
+            unsafe = theUnsafeField.get(null);
+            invokeCleaner = unsafeClass.getMethod("invokeCleaner", ByteBuffer.class);
+        } catch (ReflectiveOperationException ignored) {
+        }
+        UNSAFE = unsafe;
+        INVOKE_CLEANER = invokeCleaner;
+    }
 
     public static <T> T as(Class<T> t, Object o) {
         return t.isInstance(o) ? t.cast(o) : null;
@@ -32,6 +50,16 @@ public class ReflectionUtils {
      */
     public static <T> boolean compareAndSet(T[] array, T expectedValue, T newValue, int index) {
         return REFERENCE_ARRAY_HANDLE.compareAndSet(array, index, expectedValue, newValue);
+    }
+
+    public static void cleanDirectBuffer(ByteBuffer buffer) {
+        if (buffer == null || !buffer.isDirect() || UNSAFE == null || INVOKE_CLEANER == null) {
+            return;
+        }
+        try {
+            INVOKE_CLEANER.invoke(UNSAFE, buffer);
+        } catch (IllegalAccessException | InvocationTargetException ignored) {
+        }
     }
 
     public static void setFailsafeFieldValue(Field field, Object target, Object value)

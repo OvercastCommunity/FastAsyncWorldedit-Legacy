@@ -4,6 +4,7 @@ import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.object.PseudoRandom;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BlockID;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.io.FileNotFoundException;
 
@@ -18,7 +19,7 @@ public class RandomTextureUtil extends CachedTextureUtil {
 
     private int index;
     private int[] biomeMixBuffer = new int[3];
-    private Int2ObjectOpenHashMap<Integer> offsets = new Int2ObjectOpenHashMap<>();
+    private Int2IntOpenHashMap offsets = new Int2IntOpenHashMap();
     private Int2ObjectOpenHashMap<int[]> biomeMixes = new Int2ObjectOpenHashMap<>();
 
     protected int addRandomColor(int c1, int c2) {
@@ -96,7 +97,7 @@ public class RandomTextureUtil extends CachedTextureUtil {
             byte dr = (byte) (((color >> 16) & 0xFF) - ((newColor >> 16) & 0xFF));
             byte dg = (byte) (((color >> 8) & 0xFF) - ((newColor >> 8) & 0xFF));
             byte db = (byte) (((color >> 0) & 0xFF) - ((newColor >> 0) & 0xFF));
-            offsets.put(color, (Integer) ((dr << 16) + (dg << 8) + (db << 0)));
+            offsets.put(color, (dr << 16) + (dg << 8) + (db << 0));
         }
         return res;
     }

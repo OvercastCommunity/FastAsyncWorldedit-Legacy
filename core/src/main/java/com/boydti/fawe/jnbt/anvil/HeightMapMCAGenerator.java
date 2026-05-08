@@ -2127,12 +2127,6 @@ public class HeightMapMCAGenerator extends MCAWriter implements StreamChange, Dr
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        IterableThreadLocal.clean(indexStore);
-        super.finalize();
-    }
-
-    @Override
     public int getMaxY() {
         return 255;
     }

@@ -117,11 +117,6 @@ public class BlockArrayClipboard implements Clipboard, LightingExtent, Closeable
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        close();
-    }
-
-    @Override
     public void close() {
         IMP.close();
     }

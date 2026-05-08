@@ -55,7 +55,8 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     dependencies {
-        include(dependency("com.github.luben:zstd-jni:1.1.1"))
+        include(dependency("com.github.luben:zstd-jni:1.4.8-1"))
+        include(dependency("at.yawk.lz4:lz4-java:1.11.0"))
         include(dependency("co.aikar:fastutil-lite:1.0"))
         include(dependency("org.yaml:snakeyaml:1.33"))
         include(dependency("com.google.code.gson:gson:2.8.9"))

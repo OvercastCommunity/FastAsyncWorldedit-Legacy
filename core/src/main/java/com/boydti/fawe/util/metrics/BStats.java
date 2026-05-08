@@ -196,12 +196,6 @@ public class BStats implements Closeable {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        close();
-        super.finalize();
-    }
-
-    @Override
     public void close() {
         enabled = false;
         if (timer != null) {

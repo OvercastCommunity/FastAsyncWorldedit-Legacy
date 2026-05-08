@@ -275,7 +275,7 @@ public class MainUtil {
     private static final LZ4FastDecompressor DECOMPRESSOR = FACTORY.fastDecompressor();
 
     public static int getMaxCompressedLength(int size) {
-        return LZ4Utils.maxCompressedLength(size);
+        return COMPRESSOR.maxCompressedLength(size);
     }
 
     public static byte[] compress(byte[] bytes, byte[] buffer, Deflater deflate) throws IOException {
@@ -377,12 +377,8 @@ public class MainUtil {
         if (mode == 0) {
             return new FaweInputStream(is);
         }
-        boolean legacy;
         if (mode >= 10) {
-            legacy = false;
             mode = -mode + 10;
-        } else {
-            legacy = true;
         }
         if (mode == 0) {
             return new FaweInputStream(is);
@@ -397,11 +393,7 @@ public class MainUtil {
         }
         amountAbs = (1 + ((amountAbs - 1) % 3)) + (amountAbs > 3 ? 1 : 0);
         for (int i = 0; i < amountAbs; i++) {
-            if (legacy) {
-                is = new LZ4InputStream(is);
-            } else {
-                is = new LZ4BlockInputStream(is);
-            }
+            is = new LZ4BlockInputStream(is);
         }
         return new FaweInputStream(is);
     }
