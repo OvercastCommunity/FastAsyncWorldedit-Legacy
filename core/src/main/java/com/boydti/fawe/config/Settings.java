@@ -3,7 +3,10 @@ package com.boydti.fawe.config;
 import com.boydti.fawe.object.FaweLimit;
 import com.boydti.fawe.object.FawePlayer;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 public class Settings extends Config {
     @Ignore
@@ -32,8 +35,6 @@ public class Settings extends Config {
             " - false = do not update the plugin"
     })
     public String UPDATE = "confirm";
-    @Comment("Send anonymous usage statistics")
-    public boolean METRICS = true;
     @Comment({
             "Set true to enable WorldEdit restrictions per region (e.g. PlotSquared or WorldGuard).",
             "To be allowed to WorldEdit in a region, users need the appropriate",

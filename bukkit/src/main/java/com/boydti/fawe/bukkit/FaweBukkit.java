@@ -7,8 +7,13 @@ import com.boydti.fawe.bukkit.listener.BrushListener;
 import com.boydti.fawe.bukkit.listener.BukkitImageListener;
 import com.boydti.fawe.bukkit.listener.CFIPacketListener;
 import com.boydti.fawe.bukkit.listener.RenderListener;
-import com.boydti.fawe.bukkit.regions.*;
-import com.boydti.fawe.bukkit.util.BukkitReflectionUtils;
+import com.boydti.fawe.bukkit.regions.ASkyBlockHook;
+import com.boydti.fawe.bukkit.regions.FreeBuildRegion;
+import com.boydti.fawe.bukkit.regions.GriefPreventionFeature;
+import com.boydti.fawe.bukkit.regions.PlotMeFeature;
+import com.boydti.fawe.bukkit.regions.ResidenceFeature;
+import com.boydti.fawe.bukkit.regions.TownyFeature;
+import com.boydti.fawe.bukkit.regions.Worldguard;
 import com.boydti.fawe.bukkit.util.BukkitTaskMan;
 import com.boydti.fawe.bukkit.util.ItemUtil;
 import com.boydti.fawe.bukkit.util.VaultUtil;
@@ -31,10 +36,11 @@ import com.boydti.fawe.object.FaweCommand;
 import com.boydti.fawe.object.FawePlayer;
 import com.boydti.fawe.object.FaweQueue;
 import com.boydti.fawe.regions.FaweMaskManager;
-import com.boydti.fawe.util.*;
+import com.boydti.fawe.util.Jars;
+import com.boydti.fawe.util.MainUtil;
+import com.boydti.fawe.util.TaskManager;
 import com.boydti.fawe.util.cui.CUI;
 import com.boydti.fawe.util.image.ImageViewer;
-import com.boydti.fawe.util.metrics.BStats;
 import com.sk89q.bukkit.util.FallbackRegistrationListener;
 import com.sk89q.worldedit.bukkit.BukkitPlayerBlockBag;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
@@ -44,7 +50,6 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.world.World;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +64,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.primesoft.blockshub.BlocksHubBukkit;
 
 public class FaweBukkit implements IFawe, Listener {
@@ -273,44 +277,6 @@ public class FaweBukkit implements IFawe, Listener {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public void startMetrics() {
-        Metrics metrics = new Metrics(plugin);
-        metrics.start();
-        TaskManager.IMP.task(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<Class<?>> services = new ArrayList(Bukkit.getServicesManager().getKnownServices());
-                services.forEach(service -> {
-                    try {
-                        service.getField("B_STATS_VERSION");
-                        ArrayList<RegisteredServiceProvider<?>> providers = new ArrayList(Bukkit.getServicesManager().getRegistrations(service));
-                        for (RegisteredServiceProvider<?> provider : providers) {
-                            Object instance = provider.getProvider();
-
-                            // Link it to FAWE's metrics instead
-                            BStats.linkMetrics(instance);
-
-                            // Disable the other metrics
-                            Bukkit.getServicesManager().unregister(service, instance);
-                            try {
-                                Class<? extends Object> clazz = instance.getClass();
-                                Field logFailedRequests = ReflectionUtils.findField(clazz, boolean.class);
-                                logFailedRequests.set(null, false);
-                                Field url = null;
-                                try { url = clazz.getDeclaredField("URL"); } catch (NoSuchFieldException ignore) {
-                                for (Field field : clazz.getDeclaredFields()) if (ReflectionUtils.setAccessible(field).get(null).toString().startsWith("http")) { url = field; break; }
-                                }
-                                if (url != null) ReflectionUtils.setFailsafeFieldValue(url, null, null);
-                            } catch (NoSuchFieldError | IllegalAccessException ignore) {}
-                            catch (Throwable e) {}
-                        }
-                    } catch (NoSuchFieldException ignored) { }
-                });
-            }
-        });
     }
 
     public ItemUtil getItemUtil() {

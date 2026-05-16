@@ -7,20 +7,63 @@ import com.boydti.fawe.config.Settings;
 import com.boydti.fawe.object.FawePlayer;
 import com.boydti.fawe.object.brush.visualization.VisualQueue;
 import com.boydti.fawe.regions.general.plot.PlotSquaredFeature;
-import com.boydti.fawe.util.*;
+import com.boydti.fawe.util.CachedTextureUtil;
+import com.boydti.fawe.util.CleanTextureUtil;
+import com.boydti.fawe.util.FaweTimer;
+import com.boydti.fawe.util.MainUtil;
+import com.boydti.fawe.util.MemUtil;
+import com.boydti.fawe.util.RandomTextureUtil;
+import com.boydti.fawe.util.TaskManager;
+import com.boydti.fawe.util.TextureUtil;
+import com.boydti.fawe.util.Updater;
+import com.boydti.fawe.util.WEManager;
 import com.boydti.fawe.util.chat.ChatManager;
 import com.boydti.fawe.util.chat.PlainChatManager;
 import com.boydti.fawe.util.cui.CUI;
-import com.boydti.fawe.util.metrics.BStats;
-import com.sk89q.jnbt.*;
-import com.sk89q.worldedit.*;
+import com.sk89q.jnbt.CompoundTag;
+import com.sk89q.jnbt.CompoundTagBuilder;
+import com.sk89q.jnbt.ListTag;
+import com.sk89q.jnbt.NBTInputStream;
+import com.sk89q.jnbt.NBTOutputStream;
+import com.sk89q.jnbt.Tag;
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.BlockWorldVector;
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.PlayerDirection;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.Vector2D;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BaseItem;
 import com.sk89q.worldedit.blocks.BlockData;
-import com.sk89q.worldedit.command.*;
+import com.sk89q.worldedit.command.BiomeCommands;
+import com.sk89q.worldedit.command.BrushCommands;
+import com.sk89q.worldedit.command.BrushOptionsCommands;
+import com.sk89q.worldedit.command.ChunkCommands;
+import com.sk89q.worldedit.command.ClipboardCommands;
+import com.sk89q.worldedit.command.FlattenedClipboardTransform;
+import com.sk89q.worldedit.command.GenerationCommands;
+import com.sk89q.worldedit.command.HistoryCommands;
+import com.sk89q.worldedit.command.NavigationCommands;
+import com.sk89q.worldedit.command.OptionsCommands;
+import com.sk89q.worldedit.command.RegionCommands;
+import com.sk89q.worldedit.command.SchematicCommands;
+import com.sk89q.worldedit.command.ScriptingCommands;
+import com.sk89q.worldedit.command.SnapshotCommands;
+import com.sk89q.worldedit.command.SnapshotUtilCommands;
+import com.sk89q.worldedit.command.SuperPickaxeCommands;
+import com.sk89q.worldedit.command.ToolCommands;
+import com.sk89q.worldedit.command.UtilityCommands;
+import com.sk89q.worldedit.command.WorldEditCommands;
 import com.sk89q.worldedit.command.composition.SelectionCommand;
-import com.sk89q.worldedit.command.tool.*;
+import com.sk89q.worldedit.command.tool.AreaPickaxe;
+import com.sk89q.worldedit.command.tool.BrushTool;
+import com.sk89q.worldedit.command.tool.FloodFillTool;
+import com.sk89q.worldedit.command.tool.LongRangeBuildTool;
+import com.sk89q.worldedit.command.tool.RecursivePickaxe;
+import com.sk89q.worldedit.command.tool.SinglePickaxe;
 import com.sk89q.worldedit.command.tool.brush.GravityBrush;
 import com.sk89q.worldedit.command.util.EntityRemover;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
@@ -28,7 +71,11 @@ import com.sk89q.worldedit.extension.factory.DefaultBlockParser;
 import com.sk89q.worldedit.extension.factory.DefaultMaskParser;
 import com.sk89q.worldedit.extension.factory.DefaultTransformParser;
 import com.sk89q.worldedit.extension.factory.HashTagPatternParser;
-import com.sk89q.worldedit.extension.platform.*;
+import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
+import com.sk89q.worldedit.extension.platform.Actor;
+import com.sk89q.worldedit.extension.platform.CommandManager;
+import com.sk89q.worldedit.extension.platform.PlatformManager;
+import com.sk89q.worldedit.extension.platform.PlayerProxy;
 import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.extent.MaskingExtent;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
@@ -41,25 +88,55 @@ import com.sk89q.worldedit.function.CombinedRegionFunction;
 import com.sk89q.worldedit.function.block.BlockReplace;
 import com.sk89q.worldedit.function.block.ExtentBlockCopy;
 import com.sk89q.worldedit.function.entity.ExtentEntityCopy;
-import com.sk89q.worldedit.function.mask.*;
+import com.sk89q.worldedit.function.mask.AbstractExtentMask;
+import com.sk89q.worldedit.function.mask.AbstractMask;
+import com.sk89q.worldedit.function.mask.BlockMask;
+import com.sk89q.worldedit.function.mask.FuzzyBlockMask;
+import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.mask.MaskUnion;
+import com.sk89q.worldedit.function.mask.Masks;
+import com.sk89q.worldedit.function.mask.OffsetMask;
+import com.sk89q.worldedit.function.mask.SolidBlockMask;
 import com.sk89q.worldedit.function.operation.ChangeSetExecutor;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
 import com.sk89q.worldedit.function.operation.Operations;
-import com.sk89q.worldedit.function.pattern.*;
-import com.sk89q.worldedit.function.visitor.*;
+import com.sk89q.worldedit.function.pattern.AbstractPattern;
+import com.sk89q.worldedit.function.pattern.BlockPattern;
+import com.sk89q.worldedit.function.pattern.ClipboardPattern;
+import com.sk89q.worldedit.function.pattern.Pattern;
+import com.sk89q.worldedit.function.pattern.Patterns;
+import com.sk89q.worldedit.function.pattern.RandomPattern;
+import com.sk89q.worldedit.function.visitor.BreadthFirstSearch;
+import com.sk89q.worldedit.function.visitor.DownwardVisitor;
+import com.sk89q.worldedit.function.visitor.EntityVisitor;
+import com.sk89q.worldedit.function.visitor.FlatRegionVisitor;
+import com.sk89q.worldedit.function.visitor.LayerVisitor;
+import com.sk89q.worldedit.function.visitor.NonRisingVisitor;
+import com.sk89q.worldedit.function.visitor.RecursiveVisitor;
+import com.sk89q.worldedit.function.visitor.RegionVisitor;
 import com.sk89q.worldedit.history.change.EntityCreate;
 import com.sk89q.worldedit.history.change.EntityRemove;
 import com.sk89q.worldedit.internal.LocalWorldAdapter;
 import com.sk89q.worldedit.internal.command.WorldEditBinding;
 import com.sk89q.worldedit.internal.expression.Expression;
-import com.sk89q.worldedit.internal.expression.runtime.*;
+import com.sk89q.worldedit.internal.expression.runtime.ExpressionEnvironment;
+import com.sk89q.worldedit.internal.expression.runtime.For;
+import com.sk89q.worldedit.internal.expression.runtime.Functions;
+import com.sk89q.worldedit.internal.expression.runtime.SimpleFor;
+import com.sk89q.worldedit.internal.expression.runtime.While;
 import com.sk89q.worldedit.math.convolution.HeightMap;
 import com.sk89q.worldedit.math.interpolation.KochanekBartelsInterpolation;
 import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.CylinderRegion;
 import com.sk89q.worldedit.regions.EllipsoidRegion;
-import com.sk89q.worldedit.regions.selector.*;
+import com.sk89q.worldedit.regions.selector.ConvexPolyhedralRegionSelector;
+import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
+import com.sk89q.worldedit.regions.selector.CylinderRegionSelector;
+import com.sk89q.worldedit.regions.selector.EllipsoidRegionSelector;
+import com.sk89q.worldedit.regions.selector.ExtendingCuboidRegionSelector;
+import com.sk89q.worldedit.regions.selector.Polygonal2DRegionSelector;
+import com.sk89q.worldedit.regions.selector.SphereRegionSelector;
 import com.sk89q.worldedit.regions.shape.ArbitraryShape;
 import com.sk89q.worldedit.regions.shape.WorldEditExpressionEnvironment;
 import com.sk89q.worldedit.session.ClipboardHolder;
@@ -69,7 +146,12 @@ import com.sk89q.worldedit.session.request.Request;
 import com.sk89q.worldedit.util.command.SimpleCommandMapping;
 import com.sk89q.worldedit.util.command.SimpleDispatcher;
 import com.sk89q.worldedit.util.command.fluent.DispatcherNode;
-import com.sk89q.worldedit.util.command.parametric.*;
+import com.sk89q.worldedit.util.command.parametric.ArgumentStack;
+import com.sk89q.worldedit.util.command.parametric.ContextArgumentStack;
+import com.sk89q.worldedit.util.command.parametric.ParameterData;
+import com.sk89q.worldedit.util.command.parametric.ParametricBuilder;
+import com.sk89q.worldedit.util.command.parametric.ParametricCallable;
+import com.sk89q.worldedit.util.command.parametric.StringArgumentStack;
 import com.sk89q.worldedit.util.formatting.Fragment;
 import com.sk89q.worldedit.util.formatting.component.CommandListBox;
 import com.sk89q.worldedit.util.formatting.component.CommandUsageBox;
@@ -84,7 +166,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -149,8 +235,6 @@ public class Fawe {
     private TextureUtil textures;
     private DefaultTransformParser transformParser;
     private ChatManager chatManager = new PlainChatManager();
-
-    private BStats stats;
 
     /**
      * Get the implementation specific class
@@ -238,20 +322,6 @@ public class Fawe {
             }
         });
 
-        if (Settings.IMP.METRICS) {
-            try {
-                this.stats = new BStats();
-                this.IMP.startMetrics();
-                TaskManager.IMP.later(new Runnable() {
-                    @Override
-                    public void run() {
-                        stats.start();
-                    }
-                }, 1);
-            } catch (Throwable ignore) {
-                ignore.printStackTrace();
-            }
-        }
         this.setupCommands();
         /*
          * Instance independent stuff
@@ -292,12 +362,6 @@ public class Fawe {
             updater = new Updater();
             TaskManager.IMP.async(() -> update());
             TaskManager.IMP.repeatAsync(() -> update(), 36000);
-        }
-    }
-
-    public void onDisable() {
-        if (stats != null) {
-            stats.close();
         }
     }
 
