@@ -201,7 +201,7 @@ public interface FaweQueue extends HasFaweQueue, Extent {
     default boolean setBlock(int x, int y, int z, int id, int data, CompoundTag nbt) {
         if (nbt != null) {
             if (setBlock(x, y, z, id, data)) {
-                MainUtil.setPosition(nbt, x, y, z);
+                nbt = MainUtil.setPosition(nbt, x, y, z);
                 setTile(x, y, z, nbt);
                 return true;
             }

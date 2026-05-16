@@ -8,7 +8,6 @@ import com.boydti.fawe.jnbt.anvil.MutableMCABackedBaseBlock;
 import com.boydti.fawe.object.clipboard.remap.ClipboardRemapper;
 import com.boydti.fawe.object.collection.BlockVectorSet;
 import com.boydti.fawe.object.number.MutableLong;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.ByteTag;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
@@ -70,9 +69,8 @@ public class RemapFilter extends MCAFilterCounter {
                 block.setId(id = result.getId());
                 if (id == 218) {
                     CompoundTag nbt = block.getNbtData();
-                    if (nbt != null) {
-                        Map<String, Tag> map = ReflectionUtils.getMap(nbt.getValue());
-                        map.putIfAbsent("facing", new ByteTag((byte) block.getData()));
+                    if (nbt != null && !nbt.containsKey("facing")) {
+                        block.setNbtData(nbt.with("facing", new ByteTag((byte) block.getData())));
                     }
                 }
                 block.setData(result.getData());

@@ -469,11 +469,11 @@ public class DiskOptimizedClipboard extends FaweClipboard implements Closeable {
 
     @Override
     public boolean setTile(int x, int y, int z, CompoundTag tag) {
-        nbtMap.put(new IntegerTrio(x, y, z), tag);
-        Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+        Map<String, Tag> values = tag.mutableValue();
         values.put("x", new IntTag(x));
         values.put("y", new IntTag(y));
         values.put("z", new IntTag(z));
+        nbtMap.put(new IntegerTrio(x, y, z), tag.setValue(values));
         return true;
     }
 

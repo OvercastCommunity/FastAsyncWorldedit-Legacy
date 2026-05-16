@@ -7,11 +7,8 @@ import com.boydti.fawe.object.FaweChunk;
 import com.boydti.fawe.object.FaweQueue;
 import com.boydti.fawe.object.RunnableVal2;
 import com.boydti.fawe.util.MainUtil;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
-import com.sk89q.jnbt.LongTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.MutableBlockVector2D;
 import com.sk89q.worldedit.blocks.BaseBlock;
@@ -20,6 +17,7 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.adapter.BukkitImplAdapter;
 import com.sk89q.worldedit.entity.BaseEntity;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -174,6 +172,7 @@ public class BukkitChunk_All extends CharFaweChunk<Chunk, BukkitQueue_All> {
                 if (adapter != null) {
                     Set<CompoundTag> entitiesToSpawn = this.getEntities();
                     if (!entitiesToSpawn.isEmpty()) {
+                        Map<CompoundTag, CompoundTag> entityReplacements = null;
                         for (CompoundTag tag : entitiesToSpawn) {
                             String id = tag.getString("Id");
                             ListTag posTag = tag.getListTag("Pos");
@@ -191,10 +190,16 @@ public class BukkitChunk_All extends CharFaweChunk<Chunk, BukkitQueue_All> {
                             Entity created = adapter.createEntity(loc, new BaseEntity(id, tag));
                             if (previous != null) {
                                 UUID uuid = created.getUniqueId();
-                                Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
-                                map.put("UUIDLeast", new LongTag(uuid.getLeastSignificantBits()));
-                                map.put("UUIDMost", new LongTag(uuid.getMostSignificantBits()));
+                                if (entityReplacements == null) entityReplacements = new HashMap<>();
+                                entityReplacements.put(tag, tag.createBuilder()
+                                        .putLong("UUIDLeast", uuid.getLeastSignificantBits())
+                                        .putLong("UUIDMost", uuid.getMostSignificantBits())
+                                        .build());
                             }
+                        }
+                        if (entityReplacements != null) {
+                            entitiesToSpawn.removeAll(entityReplacements.keySet());
+                            entitiesToSpawn.addAll(entityReplacements.values());
                         }
                     }
                     HashSet<UUID> entsToRemove = this.getEntityRemoves();

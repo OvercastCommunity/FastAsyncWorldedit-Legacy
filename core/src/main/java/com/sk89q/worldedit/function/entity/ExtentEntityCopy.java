@@ -19,7 +19,6 @@
 
 package com.sk89q.worldedit.function.entity;
 
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.ByteTag;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.FloatTag;
@@ -137,9 +136,7 @@ public class ExtentEntityCopy implements EntityFunction {
             boolean changed = false;
             // Handle hanging entities (paintings, item frames, etc.)
 
-            tag = tag.createBuilder().build();
-
-            Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+            Map<String, Tag> values = tag.mutableValue();
 
             boolean hasTilePosition = tag.containsKey("TileX") && tag.containsKey("TileY") && tag.containsKey("TileZ");
             boolean hasDirection = tag.containsKey("Direction");
@@ -196,7 +193,7 @@ public class ExtentEntityCopy implements EntityFunction {
             }
 
             if (changed) {
-                return new BaseEntity(state.getTypeId(), tag);
+                return new BaseEntity(state.getTypeId(), tag.setValue(values));
             }
         }
 

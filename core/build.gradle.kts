@@ -16,6 +16,7 @@ dependencies {
     api("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT") {
         exclude(module = "bukkit-classloader-check")
     }
+    api("org.jspecify:jspecify:1.0.0")
 }
 
 tasks.processResources {

@@ -2,7 +2,6 @@ package com.sk89q.worldedit.extent.transform;
 
 import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.object.extent.ResettableExtent;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.ByteTag;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.Tag;
@@ -95,8 +94,9 @@ public class BlockTransformExtent extends ResettableExtent {
                     Direction newDirection = Direction.findClosest(applyAbsolute, Direction.Flag.CARDINAL | Direction.Flag.ORDINAL | Direction.Flag.SECONDARY_ORDINAL);
 
                     if (newDirection != null) {
-                        Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                        Map<String, Tag> values = tag.mutableValue();
                         values.put("Rot", new ByteTag((byte) MCDirections.toRotation(newDirection)));
+                        newBlock.setNbtData(tag.setValue(values));
                     }
                 }
             }
@@ -124,8 +124,9 @@ public class BlockTransformExtent extends ResettableExtent {
                     Direction newDirection = Direction.findClosest(applyAbsolute, Direction.Flag.CARDINAL | Direction.Flag.ORDINAL | Direction.Flag.SECONDARY_ORDINAL);
 
                     if (newDirection != null) {
-                        Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                        Map<String, Tag> values = tag.mutableValue();
                         values.put("Rot", new ByteTag((byte) MCDirections.toRotation(newDirection)));
+                        newBlock.setNbtData(tag.setValue(values));
                     }
                 }
             }

@@ -3,7 +3,6 @@ package com.boydti.fawe.bukkit.wrapper.state;
 import com.boydti.fawe.bukkit.chat.FancyMessage;
 import com.boydti.fawe.bukkit.wrapper.AsyncBlock;
 import com.boydti.fawe.bukkit.wrapper.AsyncBlockState;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.StringTag;
 import com.sk89q.jnbt.Tag;
@@ -47,8 +46,9 @@ public class AsyncSign extends AsyncBlockState implements Sign {
     public void setLine(int index, String line) throws IndexOutOfBoundsException {
         CompoundTag nbt = getNbtData();
         if (nbt != null) {
-            Map<String, Tag> map = ReflectionUtils.getMap(nbt.getValue());
+            Map<String, Tag> map = nbt.mutableValue();
             map.put("Text" + (index + 1), new StringTag(toJson(line)));
+            setNbtData(nbt.setValue(map));
         }
     }
 }

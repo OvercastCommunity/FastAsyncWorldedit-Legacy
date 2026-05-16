@@ -2,7 +2,6 @@ package com.boydti.fawe.object.schematic;
 
 import com.boydti.fawe.Fawe;
 import com.boydti.fawe.FaweCache;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.DoubleTag;
 import com.sk89q.jnbt.FloatTag;
@@ -240,10 +239,11 @@ public class StructureFormat implements ClipboardReader, ClipboardWriter {
                 BaseEntity state = entity.getState();
                 if (state != null) {
                     CompoundTag nbt = state.getNbtData();
-                    Map<String, Tag> nbtMap = ReflectionUtils.getMap(nbt.getValue());
+                    Map<String, Tag> nbtMap = nbt.mutableValue();
                     // Replace rotation data
                     nbtMap.put("Rotation", writeRotation(entity.getLocation(), "Rotation"));
                     nbtMap.put("id", new StringTag(state.getTypeId()));
+                    nbt = nbt.setValue(nbtMap);
                     Map<String, Object> entityMap = FaweCache.asMap("pos", pos, "blockPos", blockPos, "nbt", nbt);
                     entities.add(entityMap);
                 }

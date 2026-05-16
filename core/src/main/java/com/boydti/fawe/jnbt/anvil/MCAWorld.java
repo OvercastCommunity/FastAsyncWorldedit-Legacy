@@ -1,7 +1,6 @@
 package com.boydti.fawe.jnbt.anvil;
 
 import com.boydti.fawe.object.extent.FastWorldEditExtent;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
 import com.sk89q.jnbt.Tag;
@@ -59,9 +58,11 @@ public class MCAWorld extends LocalWorld {
     public boolean clearContainerBlockContents(Vector position) {
         BaseBlock block = extent.getLazyBlock(position);
         if (block.hasNbtData()) {
-            Map<String, Tag> nbt = ReflectionUtils.getMap(block.getNbtData().getValue());
+            CompoundTag tag = block.getNbtData();
+            Map<String, Tag> nbt = tag.mutableValue();
             if (nbt.containsKey("Items")) {
                 nbt.put("Items", new ListTag(CompoundTag.class, new ArrayList<CompoundTag>()));
+                block.setNbtData(tag.setValue(nbt));
                 try {
                     extent.setBlock(position, block);
                 } catch (WorldEditException e) {

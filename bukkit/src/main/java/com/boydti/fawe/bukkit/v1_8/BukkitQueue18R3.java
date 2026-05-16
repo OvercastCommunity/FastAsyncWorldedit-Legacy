@@ -13,7 +13,6 @@ import com.boydti.fawe.util.SetQueue;
 import com.boydti.fawe.util.TaskManager;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.StringTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.world.biome.BaseBiome;
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +31,6 @@ import net.minecraft.server.v1_8_R3.Chunk;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.Entity;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
-import net.minecraft.server.v1_8_R3.EntitySlice;
 import net.minecraft.server.v1_8_R3.EntityTracker;
 import net.minecraft.server.v1_8_R3.EntityTypes;
 import net.minecraft.server.v1_8_R3.EnumDifficulty;
@@ -414,8 +412,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
                             NBTTagCompound tag = new NBTTagCompound();
                             ent.e(tag); // readEntityIntoTag
                             CompoundTag nativeTag = (CompoundTag) toNative(tag);
-                            Map<String, Tag> map = ReflectionUtils.getMap(nativeTag.getValue());
-                            map.put("Id", new StringTag(id));
+                            nativeTag = nativeTag.with("Id", new StringTag(id));
                             previous.setEntity(nativeTag);
                         }
                     }

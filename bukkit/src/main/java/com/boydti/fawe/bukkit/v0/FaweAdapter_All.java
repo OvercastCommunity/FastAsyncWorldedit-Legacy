@@ -163,7 +163,7 @@ public class FaweAdapter_All implements BukkitImplAdapter {
                 });
 
                 WEToNMS.put(weClass, value -> {
-                    Map<String, Tag> map = ReflectionUtils.getMap(((CompoundTag) value).getValue());
+                    Map<String, Tag> map = ((CompoundTag) value).getValue();
                     Object nmsTag = nmsConstructor.newInstance();
                     Map<String, Object> nmsMap = (Map<String, Object>) mapField.get(nmsTag);
                     for (Map.Entry<String, Tag> entry : map.entrySet()) {
@@ -304,11 +304,8 @@ public class FaweAdapter_All implements BukkitImplAdapter {
 
             if (createdEntity != null) {
                 CompoundTag nativeTag = state.getNbtData();
-                Map<String, Tag> rawMap = ReflectionUtils.getMap(nativeTag.getValue());
-                for (String name : Constants.NO_COPY_ENTITY_NBT_FIELDS) {
-                    rawMap.remove(name);
-                }
                 if (nativeTag != null) {
+                    nativeTag = nativeTag.without(Constants.NO_COPY_ENTITY_NBT_FIELDS);
                     Object tag = fromNative(nativeTag);
                     readTagIntoEntity.invoke(createdEntity, tag);
                 }

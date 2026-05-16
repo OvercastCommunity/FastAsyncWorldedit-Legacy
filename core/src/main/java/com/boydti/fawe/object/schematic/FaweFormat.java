@@ -7,7 +7,6 @@ import com.boydti.fawe.object.FaweOutputStream;
 import com.boydti.fawe.object.io.FastByteArrayInputStream;
 import com.boydti.fawe.object.io.FastByteArrayOutputStream;
 import com.boydti.fawe.util.MainUtil;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.DoubleTag;
 import com.sk89q.jnbt.FloatTag;
@@ -281,12 +280,12 @@ public class FaweFormat implements ClipboardReader, ClipboardWriter {
                     int z = pt.getBlockZ() - min.getBlockZ();
                     if (block.hasNbtData()) {
                         CompoundTag tile = block.getNbtData();
-                        Map<String, Tag> map = ReflectionUtils.getMap(tile.getValue());
+                        Map<String, Tag> map = tile.mutableValue();
                         map.put("id", new StringTag(block.getNbtId()));
                         map.put("x", new IntTag(x));
                         map.put("y", new IntTag(y));
                         map.put("z", new IntTag(z));
-                        tiles.add(tile);
+                        tiles.add(tile.setValue(map));
                     }
                     if (small) {
                         out.write((byte) x);
@@ -328,12 +327,12 @@ public class FaweFormat implements ClipboardReader, ClipboardWriter {
                                 out.writeShort((short) FaweCache.getCombined(block));
                                 if (block.hasNbtData()) {
                                     CompoundTag tile = block.getNbtData();
-                                    Map<String, Tag> map = ReflectionUtils.getMap(tile.getValue());
+                                    Map<String, Tag> map = tile.mutableValue();
                                     map.put("id", new StringTag(block.getNbtId()));
                                     map.put("x", new IntTag(x - min.getBlockX()));
                                     map.put("y", new IntTag(y - min.getBlockY()));
                                     map.put("z", new IntTag(z - min.getBlockZ()));
-                                    tiles.add(tile);
+                                    tiles.add(tile.setValue(map));
                                 }
                             }
                         }
@@ -349,11 +348,11 @@ public class FaweFormat implements ClipboardReader, ClipboardWriter {
             BaseEntity state = entity.getState();
             if (state != null) {
                 CompoundTag entityTag = state.getNbtData();
-                Map<String, Tag> map = ReflectionUtils.getMap(entityTag.getValue());
+                Map<String, Tag> map = entityTag.mutableValue();
                 map.put("id", new StringTag(state.getTypeId()));
                 map.put("Pos", writeVector(entity.getLocation().toVector(), "Pos"));
                 map.put("Rotation", writeRotation(entity.getLocation(), "Rotation"));
-                out.writeNBT("", entityTag);
+                out.writeNBT("", entityTag.setValue(map));
             }
         }
         close();

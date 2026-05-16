@@ -4,7 +4,6 @@ import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.object.FaweQueue;
 import com.boydti.fawe.object.HasFaweQueue;
 import com.boydti.fawe.util.MainUtil;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.DoubleTag;
 import com.sk89q.jnbt.ListTag;
@@ -21,6 +20,7 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.biome.BaseBiome;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -75,15 +75,17 @@ public class FastWorldEditExtent extends AbstractDelegateExtent implements HasFa
     public Entity createEntity(final Location loc, final BaseEntity entity) {
         if (entity != null) {
             CompoundTag tag = entity.getNbtData();
-            Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
+            Map<String, Tag> map = tag.mutableValue();
             map.put("Id", new StringTag(entity.getTypeId()));
             ListTag pos = (ListTag) map.get("Pos");
             if (pos != null) {
-                List<Tag> posList = ReflectionUtils.getList(pos.getValue());
+                List<Tag> posList = new ArrayList<>(pos.getValue());
                 posList.set(0, new DoubleTag(loc.getX()));
                 posList.set(1, new DoubleTag(loc.getY()));
                 posList.set(2, new DoubleTag(loc.getZ()));
+                map.put("Pos", pos.setValue(posList));
             }
+            tag = tag.setValue(map);
             queue.setEntity(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), tag);
         }
         return null;

@@ -19,6 +19,7 @@
 
 package com.sk89q.jnbt;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -183,13 +184,19 @@ public class CompoundTagBuilder {
         return this;
     }
 
+    public CompoundTagBuilder remove(String key) {
+        checkNotNull(key);
+        entries.remove(key);
+        return this;
+    }
+
     /**
      * Build an unnamed compound tag with this builder's entries.
      *
      * @return the new compound tag
      */
     public CompoundTag build() {
-        return new CompoundTag(new HashMap<String, Tag>(entries));
+        return CompoundTag.ofTrusted(Collections.unmodifiableMap(new HashMap<String, Tag>(entries)));
     }
 
     /**

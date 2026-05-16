@@ -3,7 +3,6 @@ package com.boydti.fawe.object.clipboard;
 import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.jnbt.NBTStreamer;
 import com.boydti.fawe.object.IntegerTrio;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.Tag;
@@ -269,15 +268,16 @@ public class CPUOptimizedClipboard extends FaweClipboard {
         for (Map.Entry<Integer, CompoundTag> entry : nbtMapIndex.entrySet()) {
             int index = entry.getKey();
             CompoundTag tag = entry.getValue();
-            Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
-            if (!values.containsKey("x")) {
+            if (!tag.containsKey("x")) {
                 int y = index / area;
                 index -= y * area;
                 int z = index / width;
                 int x = index - (z * width);
+                Map<String, Tag> values = tag.mutableValue();
                 values.put("x", new IntTag(x));
                 values.put("y", new IntTag(y));
                 values.put("z", new IntTag(z));
+                entry.setValue(tag.setValue(values));
             }
         }
         return new ArrayList<>(nbtMapIndex.values());
@@ -290,11 +290,11 @@ public class CPUOptimizedClipboard extends FaweClipboard {
     }
 
     public boolean setTile(int index, CompoundTag tag) {
-        nbtMapIndex.put(index, tag);
-        Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+        Map<String, Tag> values = tag.mutableValue();
         values.remove("x");
         values.remove("y");
         values.remove("z");
+        nbtMapIndex.put(index, tag.setValue(values));
         return true;
     }
 

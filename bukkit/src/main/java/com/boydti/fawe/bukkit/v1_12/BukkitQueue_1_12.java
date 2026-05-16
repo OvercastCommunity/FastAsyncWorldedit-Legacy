@@ -1,6 +1,5 @@
 package com.boydti.fawe.bukkit.v1_12;
 
-import com.boydti.fawe.Fawe;
 import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.bukkit.BukkitPlayer;
 import com.boydti.fawe.bukkit.v0.BukkitQueue_0;
@@ -22,7 +21,6 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.injector.netty.WirePacket;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.StringTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.world.biome.BaseBiome;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -853,8 +851,7 @@ public class BukkitQueue_1_12 extends BukkitQueue_0<net.minecraft.server.v1_12_R
                             NBTTagCompound tag = new NBTTagCompound();
                             ent.save(tag); // readEntityIntoTag
                             CompoundTag nativeTag = (CompoundTag) toNative(tag);
-                            Map<String, Tag> map = ReflectionUtils.getMap(nativeTag.getValue());
-                            map.put("Id", new StringTag(id));
+                            nativeTag = nativeTag.with("Id", new StringTag(id));
                             previous.setEntity(nativeTag);
                         }
                     }

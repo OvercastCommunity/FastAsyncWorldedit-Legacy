@@ -1,7 +1,6 @@
 package com.boydti.fawe.object.clipboard;
 
 import com.boydti.fawe.jnbt.NBTStreamer;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.Tag;
@@ -103,11 +102,11 @@ public abstract class FaweClipboard {
             public void run(int x, int y, int z, BaseBlock block) {
                 CompoundTag tag = block.getNbtData();
                 if (tag != null) {
-                    Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                    Map<String, Tag> values = tag.mutableValue();
                     values.put("x", new IntTag(x));
                     values.put("y", new IntTag(y));
                     values.put("z", new IntTag(z));
-                    tiles.add(tag);
+                    tiles.add(tag.setValue(values));
                 }
             }
         }, false);

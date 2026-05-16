@@ -1,6 +1,5 @@
 package com.boydti.fawe.object.clipboard;
 
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.IntTag;
 import com.sk89q.jnbt.Tag;
@@ -85,10 +84,11 @@ public class WorldCopyClipboard extends ReadOnlyClipboard {
                         int z = pos.getBlockZ() - mz;
                         CompoundTag tag = block.getNbtData();
                         if (tag != null) {
-                            Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                            Map<String, Tag> values = tag.mutableValue();
                             values.put("x", new IntTag(x));
                             values.put("y", new IntTag(y));
                             values.put("z", new IntTag(z));
+                            block.setNbtData(tag.setValue(values));
                         }
                         task.run(x, y, z, block);
                         return true;
@@ -108,10 +108,11 @@ public class WorldCopyClipboard extends ReadOnlyClipboard {
                             BaseBlock block = getBlockAbs(pos.getBlockX(), pos.getBlockY(), pos.getBlockZ());
                             CompoundTag tag = block.getNbtData();
                             if (tag != null) {
-                                Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                                Map<String, Tag> values = tag.mutableValue();
                                 values.put("x", new IntTag(x));
                                 values.put("y", new IntTag(y));
                                 values.put("z", new IntTag(z));
+                                block.setNbtData(tag.setValue(values));
                             }
                             if (block.getId() != 0)
                                 task.run(x, y, z, block);
@@ -140,10 +141,11 @@ public class WorldCopyClipboard extends ReadOnlyClipboard {
                             }
                             CompoundTag tag = block.getNbtData();
                             if (tag != null) {
-                                Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                                Map<String, Tag> values = tag.mutableValue();
                                 values.put("x", new IntTag(xx));
                                 values.put("y", new IntTag(yy));
                                 values.put("z", new IntTag(zz));
+                                block.setNbtData(tag.setValue(values));
                             }
                             task.run(xx, yy, zz, block);
                         } else if (air) {

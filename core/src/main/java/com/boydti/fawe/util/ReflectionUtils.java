@@ -9,7 +9,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author DPOH-VAR
@@ -82,21 +86,6 @@ public class ReflectionUtils {
             throws NoSuchFieldException, IllegalAccessException {
         setAccessibleNonFinal(field);
         field.set(target, value);
-    }
-
-    private static final Class<?> UNMODIFIABLE_MAP = Collections.EMPTY_MAP.getClass();
-
-    public static <T, V> Map<T, V> getMap(Map<T, V> map) {
-        try {
-            Class<? extends Map> clazz = map.getClass();
-            if (clazz != UNMODIFIABLE_MAP) return map;
-            Field m = clazz.getDeclaredField("m");
-            m.setAccessible(true);
-            return (Map<T, V>) m.get(map);
-        } catch (Throwable e) {
-            MainUtil.handleError(e);
-            return map;
-        }
     }
 
     public static <T> List<T> getList(List<T> list) {

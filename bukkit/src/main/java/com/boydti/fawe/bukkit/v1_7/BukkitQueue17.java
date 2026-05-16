@@ -12,7 +12,6 @@ import com.boydti.fawe.util.ReflectionUtils;
 import com.boydti.fawe.util.TaskManager;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.StringTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.world.biome.BaseBiome;
 import java.io.File;
 import java.io.IOException;
@@ -421,8 +420,7 @@ public class BukkitQueue17 extends BukkitQueue_0<net.minecraft.server.v1_7_R4.Ch
                             NBTTagCompound tag = new NBTTagCompound();
                             ent.e(tag); // readEntityIntoTag
                             CompoundTag nativeTag = (CompoundTag) toNative(tag);
-                            Map<String, Tag> map = ReflectionUtils.getMap(nativeTag.getValue());
-                            map.put("Id", new StringTag(id));
+                            nativeTag = nativeTag.with("Id", new StringTag(id));
                             previous.setEntity(nativeTag);
                         }
                     }

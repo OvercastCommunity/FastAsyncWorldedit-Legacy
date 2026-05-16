@@ -463,24 +463,27 @@ public class MainUtil {
         }
     }
 
-    public static void setPosition(CompoundTag tag, int x, int y, int z) {
-        Map<String, Tag> value = ReflectionUtils.getMap(tag.getValue());
+    public static CompoundTag setPosition(CompoundTag tag, int x, int y, int z) {
+        Map<String, Tag> value = tag.mutableValue();
         value.put("x", new IntTag(x));
         value.put("y", new IntTag(y));
         value.put("z", new IntTag(z));
+        return tag.setValue(value);
     }
 
-    public static void setEntityInfo(CompoundTag tag, Entity entity) {
-        Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
+    public static CompoundTag setEntityInfo(CompoundTag tag, Entity entity) {
+        Map<String, Tag> map = tag.mutableValue();
         map.put("Id", new StringTag(entity.getState().getTypeId()));
         ListTag pos = (ListTag) map.get("Pos");
         if (pos != null) {
             Location loc = entity.getLocation();
-            List<Tag> posList = ReflectionUtils.getList(pos.getValue());
+            List<Tag> posList = new ArrayList<>(pos.getValue());
             posList.set(0, new DoubleTag(loc.getX()));
             posList.set(1, new DoubleTag(loc.getY()));
             posList.set(2, new DoubleTag(loc.getZ()));
+            map.put("Pos", pos.setValue(posList));
         }
+        return tag.setValue(map);
     }
 
     private static final Class[] parameters = new Class[]{URL.class};

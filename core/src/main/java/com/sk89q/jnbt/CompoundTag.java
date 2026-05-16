@@ -1,7 +1,7 @@
 package com.sk89q.jnbt;
 
-import com.sk89q.worldedit.function.entity.ExtentEntityCopy;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,16 @@ public final class CompoundTag extends Tag {
      */
     public CompoundTag(Map<String, Tag> value) {
         super();
-        this.value = value;
+        this.value = Collections.unmodifiableMap(new HashMap<>(value));
+    }
+
+    private CompoundTag(Map<String, Tag> trustedUnmodifiable, Void marker) {
+        super();
+        this.value = trustedUnmodifiable;
+    }
+
+    static CompoundTag ofTrusted(Map<String, Tag> trustedUnmodifiable) {
+        return new CompoundTag(trustedUnmodifiable, null);
     }
 
     @Override
@@ -46,6 +55,10 @@ public final class CompoundTag extends Tag {
         return value;
     }
 
+    public Map<String, Tag> mutableValue() {
+        return new HashMap<>(value);
+    }
+
     /**
      * Return a new compound tag with the given values.
      *
@@ -56,13 +69,35 @@ public final class CompoundTag extends Tag {
         return new CompoundTag(value);
     }
 
+    public CompoundTag with(String key, Tag tag) {
+        HashMap<String, Tag> map = new HashMap<>(value);
+        map.put(key, tag);
+        return ofTrusted(Collections.unmodifiableMap(map));
+    }
+
+    public CompoundTag without(String... keys) {
+        HashMap<String, Tag> map = new HashMap<>(value);
+        for (String key : keys) {
+            map.remove(key);
+        }
+        return ofTrusted(Collections.unmodifiableMap(map));
+    }
+
+    public CompoundTag without(Collection<String> keys) {
+        HashMap<String, Tag> map = new HashMap<>(value);
+        for (String key : keys) {
+            map.remove(key);
+        }
+        return ofTrusted(Collections.unmodifiableMap(map));
+    }
+
     /**
      * Create a compound tag builder.
      *
      * @return the builder
      */
     public CompoundTagBuilder createBuilder() {
-        return new CompoundTagBuilder(new HashMap<String, Tag>(value));
+        return new CompoundTagBuilder(mutableValue());
     }
 
     /**

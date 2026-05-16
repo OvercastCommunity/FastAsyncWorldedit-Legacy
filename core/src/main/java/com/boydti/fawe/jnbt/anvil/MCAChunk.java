@@ -10,7 +10,6 @@ import com.boydti.fawe.object.number.MutableLong;
 import com.boydti.fawe.util.ArrayUtil;
 import com.boydti.fawe.util.MainUtil;
 import com.boydti.fawe.util.MathMan;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.*;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -277,11 +276,11 @@ public class MCAChunk extends FaweChunk<Void> {
                 z += offsetZ;
                 short pair = MathMan.tripleBlockCoord(x, y, z);
                 CompoundTag tag = entry.getValue();
-                Map<String, Tag> map = ReflectionUtils.getMap(tag.getValue());
+                Map<String, Tag> map = tag.mutableValue();
                 map.put("x", new IntTag((x & 15) + (getX() << 4)));
                 map.put("y", new IntTag(y));
                 map.put("z", new IntTag((z & 15) + (getZ() << 4)));
-                tiles.put(pair, tag);
+                tiles.put(pair, tag.setValue(map));
             }
         }
     }

@@ -19,7 +19,6 @@
 
 package com.sk89q.worldedit.function.block;
 
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.ByteTag;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.Tag;
@@ -108,8 +107,9 @@ public class ExtentBlockCopy implements RegionFunction {
                     Direction newDirection = Direction.findClosest(applyAbsolute, Flag.CARDINAL | Flag.ORDINAL | Flag.SECONDARY_ORDINAL);
 
                     if (newDirection != null) {
-                        Map<String, Tag> values = ReflectionUtils.getMap(tag.getValue());
+                        Map<String, Tag> values = tag.mutableValue();
                         values.put("Rot", new ByteTag((byte) MCDirections.toRotation(newDirection)));
+                        state.setNbtData(tag.setValue(values));
                     }
                 }
             }

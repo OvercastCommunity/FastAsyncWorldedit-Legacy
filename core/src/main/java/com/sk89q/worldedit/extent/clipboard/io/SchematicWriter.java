@@ -7,7 +7,6 @@ import com.boydti.fawe.object.clipboard.FaweClipboard;
 import com.boydti.fawe.object.clipboard.WorldCopyClipboard;
 import com.boydti.fawe.object.io.FastByteArrayOutputStream;
 import com.boydti.fawe.object.io.PGZIPOutputStream;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.google.common.io.ByteStreams;
 import com.sk89q.jnbt.ByteArrayTag;
 import com.sk89q.jnbt.CompoundTag;
@@ -103,12 +102,12 @@ public class SchematicWriter implements ClipboardWriter {
             }
             CompoundTag rawTag = block.getNbtData();
             if (rawTag != null) {
-                Map<String, Tag> values = ReflectionUtils.getMap(rawTag.getValue());
+                Map<String, Tag> values = rawTag.mutableValue();
                 values.put("id", new StringTag(block.getNbtId()));
                 values.put("x", new IntTag(x));
                 values.put("y", new IntTag(y));
                 values.put("z", new IntTag(z));
-                tileEntities.add(rawTag);
+                tileEntities.add(rawTag.setValue(values));
             }
         }
     }

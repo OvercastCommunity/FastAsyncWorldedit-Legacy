@@ -1,8 +1,6 @@
 package com.boydti.fawe.object.extent;
 
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
@@ -14,8 +12,6 @@ import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.world.NbtValued;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 public class StripNBTExtent extends AbstractDelegateExtent {
@@ -50,9 +46,15 @@ public class StripNBTExtent extends AbstractDelegateExtent {
     public <T extends NbtValued> T stripNBT(T block) {
         if (!block.hasNbtData()) return block;
         CompoundTag nbt = block.getNbtData();
-        Map<String, Tag> value = nbt.getValue();
+        boolean present = false;
         for (String key : strip) {
-            value.remove(key);
+            if (nbt.containsKey(key)) {
+                present = true;
+                break;
+            }
+        }
+        if (present) {
+            block.setNbtData(nbt.without(strip));
         }
         return block;
     }

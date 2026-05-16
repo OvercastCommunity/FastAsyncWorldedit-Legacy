@@ -9,10 +9,8 @@ import com.boydti.fawe.object.FaweChunk;
 import com.boydti.fawe.object.FaweQueue;
 import com.boydti.fawe.util.MainUtil;
 import com.boydti.fawe.util.MathMan;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.jnbt.ListTag;
-import com.sk89q.jnbt.LongTag;
 import com.sk89q.jnbt.StringTag;
 import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.internal.Constants;
@@ -93,8 +91,7 @@ public class BukkitChunk_1_11 extends CharFaweChunk<Chunk, com.boydti.fawe.bukki
             NBTTagCompound tag = new NBTTagCompound();
             ent.e(tag); // readEntityIntoTag
             CompoundTag nativeTag = (CompoundTag) getParent().toNative(tag);
-            Map<String, Tag> map = ReflectionUtils.getMap(nativeTag.getValue());
-            map.put("Id", new StringTag(id));
+            nativeTag = nativeTag.with("Id", new StringTag(id));
             setEntity(nativeTag);
             return true;
         } else {
@@ -305,8 +302,9 @@ public class BukkitChunk_1_11 extends CharFaweChunk<Chunk, com.boydti.fawe.bukki
             Set<UUID> createdEntities = new HashSet<>();
             if (!entitiesToSpawn.isEmpty()) {
                 synchronized (BukkitQueue_0.class) {
+                    Map<CompoundTag, CompoundTag> entityReplacements = null;
                     for (CompoundTag nativeTag : entitiesToSpawn) {
-                        Map<String, Tag> entityTagMap = ReflectionUtils.getMap(nativeTag.getValue());
+                        Map<String, Tag> entityTagMap = nativeTag.getValue();
                         StringTag idTag = (StringTag) entityTagMap.get("Id");
                         ListTag posTag = (ListTag) entityTagMap.get("Pos");
                         ListTag rotTag = (ListTag) entityTagMap.get("Rotation");
@@ -334,20 +332,27 @@ public class BukkitChunk_1_11 extends CharFaweChunk<Chunk, com.boydti.fawe.bukki
                             Entity entity = EntityTypes.a(clazz, nmsWorld);
                             if (entity != null) {
                                 UUID uuid = entity.getUniqueID();
-                                entityTagMap.put("UUIDMost", new LongTag(uuid.getMostSignificantBits()));
-                                entityTagMap.put("UUIDLeast", new LongTag(uuid.getLeastSignificantBits()));
-                                if (nativeTag != null) {
-                                    NBTTagCompound tag = (NBTTagCompound) BukkitQueue_1_11.fromNative(nativeTag);
-                                    for (String name : Constants.NO_COPY_ENTITY_NBT_FIELDS) {
-                                        tag.remove(name);
-                                    }
-                                    entity.f(tag);
+                                CompoundTag updated = nativeTag.createBuilder()
+                                        .putLong("UUIDMost", uuid.getMostSignificantBits())
+                                        .putLong("UUIDLeast", uuid.getLeastSignificantBits())
+                                        .build();
+                                if (entityReplacements == null) entityReplacements = new HashMap<>();
+                                entityReplacements.put(nativeTag, updated);
+                                nativeTag = updated;
+                                NBTTagCompound tag = (NBTTagCompound) BukkitQueue_1_11.fromNative(nativeTag);
+                                for (String name : Constants.NO_COPY_ENTITY_NBT_FIELDS) {
+                                    tag.remove(name);
                                 }
+                                entity.f(tag);
                                 entity.setLocation(x, y, z, yaw, pitch);
                                 nmsWorld.addEntity(entity, CreatureSpawnEvent.SpawnReason.CUSTOM);
                                 createdEntities.add(entity.getUniqueID());
                             }
                         }
+                    }
+                    if (entityReplacements != null) {
+                        entitiesToSpawn.removeAll(entityReplacements.keySet());
+                        entitiesToSpawn.addAll(entityReplacements.values());
                     }
                 }
             }

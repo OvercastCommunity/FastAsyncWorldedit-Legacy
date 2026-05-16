@@ -5,7 +5,6 @@ import com.boydti.fawe.FaweCache;
 import com.boydti.fawe.bukkit.FaweBukkit;
 import com.boydti.fawe.bukkit.util.ItemUtil;
 import com.boydti.fawe.object.brush.BrushSettings;
-import com.boydti.fawe.util.ReflectionUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sk89q.jnbt.CompoundTag;
@@ -91,9 +90,9 @@ public class BrushBoundBaseBlock extends BaseBlock implements BrushHolder {
             if (tool == null) {
                 return tool;
             }
-            setNbtData(nbt = new CompoundTag(map = new HashMap<>()));
+            nbt = new CompoundTag(map = new HashMap<>());
         } else {
-            map = ReflectionUtils.getMap(nbt.getValue());
+            map = nbt.mutableValue();
         }
         brushCache.remove(getKey(item));
         CompoundTag display = (CompoundTag) map.get("display");
@@ -104,7 +103,7 @@ public class BrushBoundBaseBlock extends BaseBlock implements BrushHolder {
             if (display == null) {
                 map.put("display", new CompoundTag(displayMap = new HashMap()));
             } else {
-                displayMap = ReflectionUtils.getMap(display.getValue());
+                displayMap = display.mutableValue();
             }
             displayMap.put("Lore", FaweCache.asTag((Object[]) json.split("\\r?\\n")));
             String primary = (String) tool.getPrimary().getSettings().get(BrushSettings.SettingType.BRUSH);
@@ -115,20 +114,25 @@ public class BrushBoundBaseBlock extends BaseBlock implements BrushHolder {
                 String name = primary == secondary ? primary.split(" ")[0] : primary.split(" ")[0] + " / " + secondary.split(" ")[0];
                 displayMap.put("Name", new StringTag(name));
             }
+            map.put("display", new CompoundTag(displayMap));
         } else if (map.containsKey("weBrushJson")) {
             map.remove("weBrushJson");
             if (display != null) {
-                displayMap = ReflectionUtils.getMap(display.getValue());
+                displayMap = display.mutableValue();
                 displayMap.remove("Lore");
                 displayMap.remove("Name");
                 if (displayMap.isEmpty()) {
                     map.remove("display");
+                } else {
+                    map.put("display", new CompoundTag(displayMap));
                 }
             }
 
         } else {
             return tool;
         }
+        nbt = nbt.setValue(map);
+        setNbtData(nbt);
         item = Fawe.<FaweBukkit>imp().getItemUtil().setNBT(item, nbt);
         if (tool != null) {
             brushCache.put(getKey(item), tool);
