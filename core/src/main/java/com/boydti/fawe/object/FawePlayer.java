@@ -371,19 +371,27 @@ public abstract class FawePlayer<T> extends Metadatable {
         try {
             if (file.exists() && file.length() > 5) {
                 DiskOptimizedClipboard doc = new DiskOptimizedClipboard(file);
-                Player player = toWorldEditPlayer();
-                LocalSession session = getSession();
+                boolean handed = false;
                 try {
-                    if (session.getClipboard() != null) {
-                        return;
+                    Player player = toWorldEditPlayer();
+                    LocalSession session = getSession();
+                    try {
+                        if (session.getClipboard() != null) {
+                            return;
+                        }
+                    } catch (EmptyClipboardException e) {
                     }
-                } catch (EmptyClipboardException e) {
-                }
-                if (player != null && session != null) {
-                    WorldData worldData = player.getWorld().getWorldData();
-                    Clipboard clip = doc.toClipboard();
-                    ClipboardHolder holder = new ClipboardHolder(clip, worldData);
-                    getSession().setClipboard(holder);
+                    if (player != null && session != null) {
+                        WorldData worldData = player.getWorld().getWorldData();
+                        Clipboard clip = doc.toClipboard();
+                        ClipboardHolder holder = new ClipboardHolder(clip, worldData);
+                        getSession().setClipboard(holder);
+                        handed = true;
+                    }
+                } finally {
+                    if (!handed) {
+                        doc.close();
+                    }
                 }
             }
         } catch (Exception ignore) {

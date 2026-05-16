@@ -208,7 +208,7 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                         sections[j] = null;
                         continue;
                     }
-                    sections[j].a(newArray);
+                    section.a(newArray);
                     getParent().setCount(0, count - countAir, section);
                     continue;
                 }
@@ -274,6 +274,7 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
             }
             if (toRemove != null) {
                 Map<Short, CompoundTag> incomingTiles = this.getTiles();
+                Map<Integer, Class<?>> teClassByCombined = null;
                 for (Map.Entry<BlockPosition, TileEntity> entry : toRemove.entrySet()) {
                     BlockPosition bp = entry.getKey();
                     TileEntity tile = entry.getValue();
@@ -294,12 +295,21 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                     // tick removes the freshly-created replacement by position.
                     boolean replacing = false;
                     if (incomingTiles.containsKey(hash) && newId > 0) {
-                        Block newBlock = Block.getById(newId);
-                        if (newBlock instanceof IContainer) {
-                            TileEntity fresh = ((IContainer) newBlock).a(nmsWorld, combined & 15);
-                            if (fresh != null && fresh.getClass() == tile.getClass()) {
-                                replacing = true;
+                        if (teClassByCombined == null) {
+                            teClassByCombined = new HashMap<>();
+                        }
+                        Integer key = (int) combined;
+                        Class<?> freshClass = teClassByCombined.get(key);
+                        if (freshClass == null && !teClassByCombined.containsKey(key)) {
+                            Block newBlock = Block.getById(newId);
+                            if (newBlock instanceof IContainer) {
+                                TileEntity fresh = ((IContainer) newBlock).a(nmsWorld, combined & 15);
+                                freshClass = fresh != null ? fresh.getClass() : null;
                             }
+                            teClassByCombined.put(key, freshClass);
+                        }
+                        if (freshClass == tile.getClass()) {
+                            replacing = true;
                         }
                     }
                     if (replacing) {

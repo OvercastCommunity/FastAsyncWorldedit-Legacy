@@ -129,6 +129,7 @@ public class FaweFormat implements ClipboardReader, ClipboardWriter {
                 }
             } catch (WorldEditException e) {
                 e.printStackTrace();
+                clipboard.close();
                 return null;
             }
         } else {
@@ -198,6 +199,7 @@ public class FaweFormat implements ClipboardReader, ClipboardWriter {
                 }
             } catch (WorldEditException e) {
                 e.printStackTrace();
+                clipboard.close();
                 return null;
             }
         }

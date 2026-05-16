@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -62,9 +63,24 @@ public class ReflectionUtils {
         }
     }
 
+    public static void setAccessibleNonFinal(Field field) {
+        field.setAccessible(true);
+        if (Modifier.isFinal(field.getModifiers())) {
+            try {
+                Field lookupField = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+                lookupField.setAccessible(true);
+                ((MethodHandles.Lookup) lookupField.get(null))
+                        .findSetter(Field.class, "modifiers", int.class)
+                        .invokeExact(field, field.getModifiers() & ~Modifier.FINAL);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static void setFailsafeFieldValue(Field field, Object target, Object value)
             throws NoSuchFieldException, IllegalAccessException {
-        field.setAccessible(true);
+        setAccessibleNonFinal(field);
         field.set(target, value);
     }
 
