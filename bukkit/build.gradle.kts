@@ -18,21 +18,13 @@ dependencies {
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_8:1.8.8")
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_7:1.7.10")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
-    compileOnly("me.ryanhamshire:GriefPrevention:11.5.2")
     compileOnly("com.plotsquared:PlotSquared-Bukkit:3.823")
     compileOnly("org.primesoft:BlocksHub:2.0")
-    compileOnly("net.jzx7:regios:5.9.9")
-    compileOnly("com.bekvon.bukkit.residence:Residence:4.5._13.1")
-    compileOnly("com.palmergames.bukkit:towny:0.84.0.0")
-    compileOnly("com.worldcretornica:plotme_core:0.16.3")
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:6.1.5")
     compileOnly("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT")
     compileOnly("com.thevoxelbox.voxelsniper:voxelsniper:5.171.0")
     compileOnly("net.dmulloy2:ProtocolLib:5.1.0")
-    compileOnly("com.wasteofplastic:askyblock:3.0.9.4")
-    compileOnly("org.inventivetalent:mapmanager:1.7.2-SNAPSHOT") {
-        isTransitive = false
-    }
+    compileOnly("org.inventivetalent:mapmanager:1.7.2-SNAPSHOT") { isTransitive = false }
 }
 
 tasks.processResources {

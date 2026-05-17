@@ -6,7 +6,6 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("org.yaml:snakeyaml:1.33")
-    compileOnly("net.fabiozumbi12:redprotect:1.9.6")
     compileOnly("com.plotsquared:PlotSquared-Bukkit:3.823")
     compileOnly("org.primesoft:BlocksHub:2.0")
     implementation("com.github.luben:zstd-jni:1.4.8-1") { isTransitive = false }
