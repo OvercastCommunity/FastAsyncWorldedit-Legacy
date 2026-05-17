@@ -22,7 +22,6 @@ dependencies {
     compileOnly("org.primesoft:BlocksHub:2.0")
     compileOnly("com.sk89q.worldedit:worldedit-bukkit:6.1.5")
     compileOnly("com.sk89q.worldedit:worldedit-core:6.1.4-SNAPSHOT")
-    compileOnly("com.thevoxelbox.voxelsniper:voxelsniper:5.171.0")
     compileOnly("net.dmulloy2:ProtocolLib:5.1.0")
     compileOnly("org.inventivetalent:mapmanager:1.7.2-SNAPSHOT") { isTransitive = false }
 }
@@ -49,7 +48,6 @@ val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     dependencies {
         include(dependency("com.github.luben:zstd-jni:1.4.8-1"))
         include(dependency("at.yawk.lz4:lz4-java:1.11.0"))
-        include(dependency("co.aikar:fastutil-lite:1.0"))
         include(dependency("org.yaml:snakeyaml:1.33"))
         include(dependency("com.google.code.gson:gson:2.8.9"))
         include(dependency(":core"))
