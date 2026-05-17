@@ -15,7 +15,7 @@ dependencies {
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_11:1.11")
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_10:1.10")
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_9:1.9.4")
-    compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_8:1.8.8")
+    compileOnly("app.ashcon:sportpaper:1.8.8-R0.1-SNAPSHOT")
     compileOnly("org.bukkit.craftbukkit:Craftbukkit_1_7:1.7.10")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
     compileOnly("com.plotsquared:PlotSquared-Bukkit:3.823")

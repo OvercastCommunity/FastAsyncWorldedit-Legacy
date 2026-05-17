@@ -142,9 +142,9 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
                     boolean mustSave = false;
                     boolean[][] chunksUnloaded = null;
                     { // Unload chunks
-                        Iterator<net.minecraft.server.v1_8_R3.Chunk> iter = provider.a().iterator();
+                        Iterator<?> iter = provider.a().iterator();
                         while (iter.hasNext()) {
-                            net.minecraft.server.v1_8_R3.Chunk chunk = iter.next();
+                            net.minecraft.server.v1_8_R3.Chunk chunk = (net.minecraft.server.v1_8_R3.Chunk) iter.next();
                             if (chunk.locX >> 5 == mcaX && chunk.locZ >> 5 == mcaZ) {
                                 boolean isIn = allowed.isInChunk(chunk.locX, chunk.locZ);
                                 if (isIn) {
@@ -217,14 +217,11 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
                                             if (arr[z]) {
                                                 int cx = bx + x;
                                                 int cz = bz + z;
-                                                SetQueue.IMP.addTask(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        net.minecraft.server.v1_8_R3.Chunk chunk = provider.getChunkAt(cx, cz, null);
-                                                        if (chunk != null) {
-                                                            if (nmsWorld.getPlayerChunkMap().isChunkInUse(cx, cz)) {
-                                                                sendChunk(chunk, 0);
-                                                            }
+                                                SetQueue.IMP.addTask(() -> {
+                                                    Chunk chunk = provider.getChunkAt(cx, cz, null);
+                                                    if (chunk != null) {
+                                                        if (nmsWorld.getPlayerChunkMap().isChunkInUse(cx, cz)) {
+                                                            sendChunk(chunk, 0);
                                                         }
                                                     }
                                                 });
@@ -345,8 +342,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
 
     @Override
     public void setFullbright(ChunkSection[] sections) {
-        for (int i = 0; i < sections.length; i++) {
-            ChunkSection section = sections[i];
+        for (ChunkSection section : sections) {
             if (section != null) {
                 byte[] bytes = section.getSkyLightArray().a();
                 Arrays.fill(bytes, Byte.MAX_VALUE);
@@ -385,7 +381,6 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
         if (tiles != null) {
             for (Map.Entry<BlockPosition, TileEntity> entry : tiles.entrySet()) {
                 TileEntity tile = entry.getValue();
-                NBTTagCompound tag = new NBTTagCompound();
                 BlockPosition pos = entry.getKey();
                 CompoundTag nativeTag = getTag(tile);
                 previous.setTile(pos.getX() & 15, pos.getY(), pos.getZ() & 15, nativeTag);
@@ -408,10 +403,10 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
                     int j = FaweCache.CACHE_J[y][z][x];
                     if (array[j] != 0) {
                         String id = EntityTypes.b(ent);
-                        if (id != null) {
-                            NBTTagCompound tag = new NBTTagCompound();
-                            ent.e(tag); // readEntityIntoTag
-                            CompoundTag nativeTag = (CompoundTag) toNative(tag);
+                        NBTTagCompound tag = new NBTTagCompound();
+                        ent.e(tag); // readEntityIntoTag
+                        CompoundTag nativeTag = (CompoundTag) toNative(tag);
+                        if (nativeTag != null && id != null) {
                             nativeTag = nativeTag.with("Id", new StringTag(id));
                             previous.setEntity(nativeTag);
                         }
@@ -433,7 +428,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
         }
     }
 
-    private BlockPosition.MutableBlockPosition pos = new BlockPosition.MutableBlockPosition(0, 0, 0);
+    private final BlockPosition.MutableBlockPosition pos = new BlockPosition.MutableBlockPosition(0, 0, 0);
 
     @Override
     public CompoundTag getTileEntity(net.minecraft.server.v1_8_R3.Chunk chunk, int x, int y, int z) {
@@ -511,7 +506,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
             // Send tiles
             for (Map.Entry<BlockPosition, TileEntity> entry : nmsChunk.getTileEntities().entrySet()) {
                 TileEntity tile = entry.getValue();
-                Packet tilePacket = tile.getUpdatePacket();
+                Packet<?> tilePacket = tile.getUpdatePacket();
                 for (EntityPlayer player : players) {
                     player.playerConnection.sendPacket(tilePacket);
                 }
@@ -523,9 +518,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
                     }
                 }
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
     }
@@ -568,7 +561,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
         if (folder.exists() && !folder.isDirectory()) {
             throw new IllegalArgumentException("File exists with the name '" + name + "' and isn't a folder");
         }
-        TaskManager.IMP.sync(new RunnableVal<Object>() {
+        TaskManager.IMP.sync(new RunnableVal<>() {
             @Override
             public void run(Object value) {
                 try {
@@ -624,7 +617,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
             internal.getWorld().getPopulators().addAll(generator.getDefaultPopulators(internal.getWorld()));
         }
         // Add the world
-        return TaskManager.IMP.sync(new RunnableVal<World>() {
+        return TaskManager.IMP.sync(new RunnableVal<>() {
             @Override
             public void run(World value) {
                 console.worlds.add(internal);
@@ -655,7 +648,7 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
     }
 
     @Override
-    public FaweChunk getFaweChunk(int x, int z) {
+    public FaweChunk<?> getFaweChunk(int x, int z) {
         return new BukkitChunk_1_8(this, x, z);
     }
 
@@ -718,12 +711,12 @@ public class BukkitQueue18R3 extends BukkitQueue_0<net.minecraft.server.v1_8_R3.
     @Override
     public void relightBlock(int x, int y, int z) {
         pos.c(x, y, z);
-        nmsWorld.c(EnumSkyBlock.BLOCK, pos);
+        nmsWorld.updateLight(EnumSkyBlock.BLOCK, pos);
     }
 
     @Override
     public void relightSky(int x, int y, int z) {
         pos.c(x, y, z);
-        nmsWorld.c(EnumSkyBlock.SKY, pos);
+        nmsWorld.updateLight(EnumSkyBlock.SKY, pos);
     }
 }

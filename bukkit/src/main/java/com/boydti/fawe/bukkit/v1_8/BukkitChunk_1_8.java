@@ -38,17 +38,16 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
     }
 
     @Override
-    public CharFaweChunk copy(boolean shallow) {
+    public CharFaweChunk<Chunk, BukkitQueue18R3> copy(boolean shallow) {
         BukkitChunk_1_8 copy;
         if (shallow) {
             copy = new BukkitChunk_1_8(getParent(), getX(), getZ(), ids, count, air, heightMap);
             copy.biomes = biomes;
-            copy.chunk = chunk;
         } else {
             copy = new BukkitChunk_1_8(getParent(), getX(), getZ(), (char[][]) MainUtil.copyNd(ids), count.clone(), air.clone(), heightMap.clone());
             copy.biomes = biomes != null ? biomes.clone() : null;
-            copy.chunk = chunk;
         }
+        copy.chunk = chunk;
         return copy;
     }
 
@@ -63,7 +62,7 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
     }
 
     @Override
-    public FaweChunk call() {
+    public FaweChunk<?> call() {
         CraftChunk chunk = (CraftChunk) this.getChunk();
         int bx = this.getX() << 4;
         int bz = this.getZ() << 4;
@@ -84,8 +83,9 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                 int count = this.getCount(i);
                 if (count == 0 || getParent().getSettings().EXPERIMENTAL.KEEP_ENTITIES_IN_BLOCKS) {
                     continue;
-                } else if (count >= 4096) {
-                    Collection<Entity> ents = entities[i];
+                }
+                Collection<Entity> ents = entities[i];
+                if (count >= 4096) {
                     if (!ents.isEmpty()) {
                         synchronized (BukkitQueue_0.class) {
                             Iterator<Entity> iter = ents.iterator();
@@ -100,11 +100,10 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                         }
                     }
                 } else {
-                    Collection<Entity> ents = entities[i];
                     if (!ents.isEmpty()) {
                         char[] array = this.getIdArray(i);
                         if (array == null || entities[i] == null || entities[i].isEmpty()) continue;
-                        Entity[] entsArr = ents.toArray(new Entity[ents.size()]);
+                        Entity[] entsArr = ents.toArray(new Entity[0]);
                         synchronized (BukkitQueue_0.class) {
                             for (Entity entity : entsArr) {
                                 if (entity instanceof EntityPlayer) {
@@ -125,10 +124,9 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
             HashSet<UUID> entsToRemove = this.getEntityRemoves();
             if (!entsToRemove.isEmpty()) {
                 synchronized (BukkitQueue_0.class) {
-                    for (int i = 0; i < entities.length; i++) {
-                        Collection<Entity> ents = entities[i];
-                        if (ents.isEmpty()) {
-                            Entity[] entsArr = ents.toArray(new Entity[ents.size()]);
+                    for (Collection<Entity> ents : entities) {
+                        if (!ents.isEmpty()) {
+                            Entity[] entsArr = ents.toArray(new Entity[0]);
                             for (Entity entity : entsArr) {
                                 if (entsToRemove.contains(entity.getUniqueID())) {
                                     nmsWorld.removeEntity(entity);
@@ -146,8 +144,8 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                     for (CompoundTag nativeTag : entitiesToSpawn) {
                         Map<String, Tag> entityTagMap = nativeTag.getValue();
                         StringTag idTag = (StringTag) entityTagMap.get("Id");
-                        ListTag posTag = (ListTag) entityTagMap.get("Pos");
-                        ListTag rotTag = (ListTag) entityTagMap.get("Rotation");
+                        ListTag<?> posTag = (ListTag<?>) entityTagMap.get("Pos");
+                        ListTag<?> rotTag = (ListTag<?>) entityTagMap.get("Rotation");
                         if (idTag == null || posTag == null || rotTag == null) {
                             Fawe.debug("Unknown entity tag: " + nativeTag);
                             continue;
@@ -160,8 +158,8 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                         String id = idTag.getValue();
                         Entity entity = EntityTypes.createEntityByName(id, nmsWorld);
                         if (entity != null) {
-                            if (nativeTag != null) {
-                                NBTTagCompound tag = (NBTTagCompound) BukkitQueue18R3.fromNative(nativeTag);
+                            NBTTagCompound tag = (NBTTagCompound) BukkitQueue18R3.fromNative(nativeTag);
+                            if (tag != null) {
                                 for (String name : Constants.NO_COPY_ENTITY_NBT_FIELDS) {
                                     tag.remove(name);
                                 }
@@ -176,7 +174,7 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
             }
             // Run change task if applicable
             if (getParent().getChangeTask() != null) {
-                CharFaweChunk previous = getParent().getPrevious(this, sections, tiles, entities, createdEntities, false);
+                CharFaweChunk<?, ?> previous = getParent().getPrevious(this, sections, tiles, entities, createdEntities, false);
                 getParent().getChangeTask().run(previous, this);
             }
             // Set blocks
@@ -245,7 +243,6 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                                 getParent().getRelighter().addLightUpdate(bx + x, y, bz + z);
                             }
                             currentArray[k] = n;
-                            continue;
                     }
                 }
                 getParent().setCount(0, getParent().getNonEmptyBlockCount(section) + solid, section);
@@ -345,10 +342,12 @@ public class BukkitChunk_1_8 extends CharFaweChunk<Chunk, BukkitQueue18R3> {
                 TileEntity tileEntity = nmsWorld.getTileEntity(pos);
                 if (tileEntity != null) {
                     NBTTagCompound tag = (NBTTagCompound) BukkitQueue18R3.fromNative(nativeTag);
-                    tag.set("x", new NBTTagInt(x));
-                    tag.set("y", new NBTTagInt(y));
-                    tag.set("z", new NBTTagInt(z));
-                    tileEntity.a(tag); // ReadTagIntoTile
+                    if (tag != null) {
+                        tag.set("x", new NBTTagInt(x));
+                        tag.set("y", new NBTTagInt(y));
+                        tag.set("z", new NBTTagInt(z));
+                        tileEntity.a(tag); // ReadTagIntoTile
+                    }
                 }
             }
         } catch (Throwable e) {

@@ -11,6 +11,7 @@ dependencyResolutionManagement {
         flatDir {
             dirs("libs")
         }
+        maven { url = uri("https://repo.pgm.fyi/snapshots") }
         maven { url = uri("https://hub.spigotmc.org/nexus/content/groups/public/") }
         maven { url = uri("https://maven.enginehub.org/repo/") }
         maven { url = uri("https://repo.maven.apache.org/maven2") }
